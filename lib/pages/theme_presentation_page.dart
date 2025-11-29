@@ -93,9 +93,20 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                 children: [
                   // タイトル
                   Text(
-                    'お題発表',
+                    'お題',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
+                      fontSize: 48,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'スタートのお題から絵しりとりを始めよう！\n2分以内にゴールのお題にたどり着け！',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -113,46 +124,14 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
 
                       return Column(
                         children: [
-                          // スタートとゴール
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildCharacterCard(
-                                context,
-                                label: 'スタート',
-                                character: startCharacter,
-                                color: Colors.blue,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 24),
-                                child: Icon(
-                                  Icons.arrow_forward,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              _buildCharacterCard(
-                                context,
-                                label: 'ゴール',
-                                character: goalCharacter,
-                                color: Colors.green,
-                              ),
-                            ],
+                          _buildThemeCard(
+                            label: 'スタートのお題',
+                            content: startCharacter,
                           ),
-                          const SizedBox(height: 24),
-
-                          // 説明
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '「$startCharacter」から始まる絵しりとりで\n「$goalCharacter」を目指しましょう！',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyLarge,
-                            ),
+                          const SizedBox(height: 32),
+                          _buildThemeCard(
+                            label: 'ゴールのお題',
+                            content: goalCharacter,
                           ),
                         ],
                       );
@@ -174,105 +153,87 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                         }
                       }
 
-                      final readyCount =
-                          participants.where((p) => p.isReady).length;
+                      // final readyCount =
+                      //     participants.where((p) => p.isReady).length;
                       final isSelfReady = selfParticipant?.isReady ?? false;
 
                       return Column(
                         children: [
-                          // 準備状況バー
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.people,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '準備完了: $readyCount / ${participants.length}',
-                                  style: theme.textTheme.titleMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
+                          // 準備状況バー (非表示)
+                          // Container(
+                          //   padding: const EdgeInsets.symmetric(
+                          //     horizontal: 16,
+                          //     vertical: 12,
+                          //   ),
+                          //   decoration: BoxDecoration(
+                          //     color: theme.colorScheme.surfaceContainerHighest,
+                          //     borderRadius: BorderRadius.circular(12),
+                          //   ),
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.center,
+                          //     children: [
+                          //       Icon(
+                          //         Icons.people,
+                          //         color: theme.colorScheme.primary,
+                          //       ),
+                          //       const SizedBox(width: 8),
+                          //       Text(
+                          //         '準備完了: $readyCount / ${participants.length}',
+                          //         style: theme.textTheme.titleMedium,
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
+                          // const SizedBox(height: 16),
 
                           // 準備完了ボタン
                           SizedBox(
-                            width: 280,
-                            height: 56,
-                            child: ElevatedButton.icon(
+                            width: double.infinity,
+                            height: 64,
+                            child: ElevatedButton(
                               onPressed: () =>
                                   _toggleReady(nextReady: !isSelfReady),
-                              icon: Icon(
-                                isSelfReady
-                                    ? Icons.check_circle
-                                    : Icons.radio_button_unchecked,
-                              ),
-                              label: Text(
-                                isSelfReady ? '準備解除' : '準備完了',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isSelfReady
-                                    ? Colors.grey
-                                    : theme.colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                              child: Text(
+                                isSelfReady ? '待機中...' : 'おぼえた！',
                               ),
                             ),
                           ),
 
                           const SizedBox(height: 24),
 
-                          // 参加者の準備状況リスト
-                          ...participants.map(
-                            (participant) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    participant.isReady
-                                        ? Icons.check_circle
-                                        : Icons.hourglass_empty,
-                                    size: 16,
-                                    color: participant.isReady
-                                        ? Colors.green
-                                        : Colors.grey,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    participant.displayName,
-                                    style: TextStyle(
-                                      color: participant.isReady
-                                          ? Colors.green
-                                          : Colors.grey,
-                                      fontWeight:
-                                          participant.userId == currentUserId
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                          // 参加者の準備状況リスト (今のところ残すが、必要なければコメントアウト)
+                          // ...participants.map(
+                          //   (participant) => Padding(
+                          //     padding: const EdgeInsets.only(bottom: 4),
+                          //     child: Row(
+                          //       mainAxisAlignment: MainAxisAlignment.center,
+                          //       children: [
+                          //         Icon(
+                          //           participant.isReady
+                          //               ? Icons.check_circle
+                          //               : Icons.hourglass_empty,
+                          //           size: 16,
+                          //           color: participant.isReady
+                          //               ? Colors.green
+                          //               : Colors.grey,
+                          //         ),
+                          //         const SizedBox(width: 8),
+                          //         Text(
+                          //           participant.displayName,
+                          //           style: TextStyle(
+                          //             color: participant.isReady
+                          //                 ? Colors.green
+                          //                 : Colors.grey,
+                          //             fontWeight:
+                          //                 participant.userId == currentUserId
+                          //                     ? FontWeight.bold
+                          //                     : FontWeight.normal,
+                          //           ),
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       );
                     },
@@ -288,41 +249,41 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
     );
   }
 
-  Widget _buildCharacterCard(
-    BuildContext context, {
+  Widget _buildThemeCard({
     required String label,
-    required String character,
-    required Color color,
+    required String content,
   }) {
-    return Container(
-      width: 120,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color, width: 2),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF5D2E8E),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Center(
+            child: Text(
+              content,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            character,
-            style: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
