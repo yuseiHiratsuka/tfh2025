@@ -53,6 +53,7 @@ void main() {
 
       final user = await repository.signInAnonymouslyIfNeeded();
 
+      expect(user, same(existingUser));
       expect(user.uid, existingUser.uid);
       expect(auth.signInCallCount, 0);
     });
@@ -73,6 +74,7 @@ void main() {
       completer.complete(MockUserCredential(true, mockUser: mockUser));
       final users = await Future.wait([future1, future2]);
 
+      expect(users[0], same(users[1]));
       expect(users[0].uid, 'anon-user');
       expect(users[1].uid, 'anon-user');
       expect(auth.signInCallCount, 1);
@@ -92,7 +94,13 @@ void main() {
 
       await expectLater(
         repository.signInAnonymouslyIfNeeded(),
-        throwsA(isA<StateError>()),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('Firebase Consoleで匿名認証が有効になっているか確認してください。'),
+          ),
+        ),
       );
       expect(auth.signInCallCount, 1);
 
