@@ -109,6 +109,9 @@ abstract class Room with _$Room {
 
     /// チェーンボーナス
     int? chainBonus,
+
+    /// 残り時間（秒）
+    int? remainingTime,
   }) = _Room;
 
   const Room._();
