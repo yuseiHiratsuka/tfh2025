@@ -46,6 +46,7 @@ Participant _participant({
     joinedAt: DateTime(2024),
     isReady: false,
     isMaster: isMaster,
+    isAI: false,
   );
 }
 

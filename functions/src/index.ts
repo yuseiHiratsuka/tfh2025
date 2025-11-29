@@ -97,21 +97,28 @@ export const processSubmissionImage = functions
  * しりとり判定ヘルパー関数
  * @param currentChar 現在の文字
  * @param firstChar 提出された単語の最初の文字
+ * @param lastChar 提出された単語の最後の文字
  * @param usedWords 使用済み単語のリスト
  * @param word 提出された単語
- * @return {isValid: boolean, reason: string | null}
+ * @param chainCount 現在のチェーン数
+ * @param goalCharacter ゴール文字
+ * @return {isValid: boolean, reasonCode: string | null, reason: string | null}
  */
 function validateShiritori(
     currentChar: string,
     firstChar: string,
+    lastChar: string,
     usedWords: string[],
-    word: string
-): { isValid: boolean; reason: string | null } {
+    word: string,
+    chainCount: number,
+    goalCharacter: string
+): { isValid: boolean; reasonCode: string | null; reason: string | null } {
     // しりとりチェック: 現在の文字と一致するか
     if (currentChar !== firstChar) {
         return {
             isValid: false,
-            reason: `しりとりが成立していません。「${currentChar}」で始まる単語を入力してください。`,
+            reasonCode: "start_char_mismatch",
+            reason: `「${currentChar}」から始まる絵を描いてください（「${firstChar}」から始まっています）`,
         };
     }
 
@@ -119,11 +126,30 @@ function validateShiritori(
     if (usedWords.includes(word)) {
         return {
             isValid: false,
+            reasonCode: "word_duplicated",
             reason: "この単語はすでに使用されています。",
         };
     }
 
-    return { isValid: true, reason: null };
+    // 「ん」禁止ルール（ゴール文字が「ん」の場合を除く）
+    if (lastChar === "ん" && goalCharacter !== "ん") {
+        return {
+            isValid: false,
+            reasonCode: "ends_with_n",
+            reason: "「ん」で終わる言葉は使えません",
+        };
+    }
+
+    // 最低ターン数ルール（3ターン未満でゴール到達不可）
+    if (chainCount < 2 && lastChar === goalCharacter) {
+        return {
+            isValid: false,
+            reasonCode: "min_turns_not_reached",
+            reason: `最低3ターン必要です（現在${chainCount + 1}ターン目）`,
+        };
+    }
+
+    return { isValid: true, reasonCode: null, reason: null };
 }
 
 /**
@@ -189,15 +215,19 @@ export const validateAndAdoptSubmission = functions
                 const shiritoriValidation = validateShiritori(
                     currentCharacter,
                     firstChar,
+                    lastChar,
                     usedWords,
-                    word
+                    word,
+                    chainCount,
+                    goalCharacter
                 );
 
                 if (!shiritoriValidation.isValid) {
                     return {
-                        isValid: true,
+                        isValid: false,
                         isAdopted: false,
                         isGoalReached: false,
+                        reasonCode: shiritoriValidation.reasonCode,
                         reason: shiritoriValidation.reason,
                         adoptionOrder: null,
                     };
@@ -267,5 +297,195 @@ export const validateAndAdoptSubmission = functions
                     validatedAt: admin.firestore.Timestamp.now(),
                 },
             });
+        }
+    });
+
+/**
+ * AIターン判定関数
+ * @param chainCount 現在のチェーン数
+ * @returns AI投稿が必要かどうか
+ */
+function shouldAISubmit(chainCount: number): boolean {
+    // ターン3 (chainCount = 2 の次)
+    if (chainCount === 2) return true;
+
+    // ターン5 (chainCount = 4 の次)
+    if (chainCount === 4) return true;
+
+    // ターン11以降、3回に1回 (chainCount = 10, 13, 16, 19...)
+    if (chainCount >= 10 && (chainCount - 10) % 3 === 0) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Gemini (Imagen 3) を使用して画像を生成
+ * @param word 生成する単語
+ * @returns 画像のバイナリデータ
+ */
+async function generateImageWithGemini(word: string): Promise<Buffer> {
+    const prompt = `「${word}」を表すシンプルで分かりやすいイラスト。子供が描いたような簡単な絵。背景は白。`;
+
+    const body = {
+        instances: [{ prompt }],
+        parameters: {
+            aspectRatio: "1:1",
+            numberOfImages: 1,
+        },
+    };
+
+    const modelName = "imagen-3.0-generate-002";
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Imagen API error: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.predictions || result.predictions.length === 0) {
+        throw new Error("No image generated from Imagen API");
+    }
+
+    const imageBase64 = result.predictions[0].bytesBase64Encoded;
+    return Buffer.from(imageBase64, "base64");
+}
+
+/**
+ * AI参加者が画像を生成・投稿する
+ */
+export const triggerAISubmission = functions
+    .runWith({
+        secrets: ["GEMINI_API_KEY"],
+        memory: "1GB",
+        timeoutSeconds: 120,
+    })
+    .firestore
+    .document("rooms/{roomId}")
+    .onUpdate(async (change, context) => {
+        const before = change.before.data();
+        const after = change.after.data();
+        const { roomId } = context.params;
+
+        // ゲームが進行中でない場合はスキップ
+        if (after.status !== "playing") {
+            console.log(`Room ${roomId} is not playing (status: ${after.status})`);
+            return;
+        }
+
+        // chainCountが更新されていない場合はスキップ
+        if (before.chainCount === after.chainCount) {
+            return;
+        }
+
+        // AI投稿のタイミングかチェック
+        if (!shouldAISubmit(after.chainCount)) {
+            console.log(`Not AI turn for room ${roomId}, chainCount: ${after.chainCount}`);
+            return;
+        }
+
+        // ゴール到達している場合はスキップ
+        if (after.isGoalReached) {
+            console.log(`Goal already reached for room ${roomId}`);
+            return;
+        }
+
+        console.log(`AI submission triggered for room ${roomId}, chainCount: ${after.chainCount}`);
+
+        try {
+            const currentCharacter = after.currentCharacter;
+            const usedWords = after.usedWords || [];
+            const goalCharacter = after.goalCharacter;
+
+            // AI参加者のドキュメントが存在しない場合は作成
+            const aiParticipantRef = db.doc(`rooms/${roomId}/participants/ai_participant`);
+            const aiParticipantDoc = await aiParticipantRef.get();
+
+            if (!aiParticipantDoc.exists) {
+                await aiParticipantRef.set({
+                    userId: "ai_participant",
+                    displayName: "AI しりとりくん",
+                    avatarUrl: null,
+                    joinedAt: admin.firestore.Timestamp.now(),
+                    lastSubmittedAt: null,
+                    isReady: true,
+                    isMaster: false,
+                    isAI: true,
+                });
+                console.log(`Created AI participant for room ${roomId}`);
+            }
+
+            // 1. 適切な単語を生成 (Gemini Text API)
+            const textModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+            const wordPrompt = `
+「${currentCharacter}」で始まる、しりとりに使える簡単な日本語の単語を1つだけ答えてください。
+以下の単語は既に使われているので避けてください: ${usedWords.join(", ")}
+単語のみをひらがなで返してください。説明は不要です。
+「ん」で終わる単語は避けてください。
+${goalCharacter ? `できるだけ「${goalCharacter}」で終わる単語は避けてください。` : ""}
+`;
+
+            const wordResult = await textModel.generateContent(wordPrompt);
+            const wordResponse = await wordResult.response;
+            let targetWord = wordResponse.text().trim().replace(/[\n\r\s]/g, "");
+
+            console.log(`AI generated word: ${targetWord} for room ${roomId}`);
+
+            // 2. 画像を生成 (Gemini Imagen 3)
+            const imageBuffer = await generateImageWithGemini(targetWord);
+
+            // 画像フォーマットを判定（JPEGまたはPNG）
+            const mimeType = imageBuffer[0] === 0xFF && imageBuffer[1] === 0xD8 ? "image/jpeg" : "image/png";
+            const extension = mimeType === "image/jpeg" ? "jpg" : "png";
+
+            // 3. Storage に保存
+            const timestamp = Date.now();
+            const storagePath = `rooms/${roomId}/submissions/ai_participant_${timestamp}.${extension}`;
+            const bucket = admin.storage().bucket();
+            const file = bucket.file(storagePath);
+
+            await file.save(imageBuffer, {
+                metadata: {
+                    contentType: mimeType,
+                },
+            });
+
+            await file.makePublic();
+            const imageUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+
+            console.log(`AI image saved to ${storagePath}`);
+
+            // 4. Submission ドキュメント作成
+            const submissionRef = db.collection(`rooms/${roomId}/submissions`).doc();
+            await submissionRef.set({
+                id: submissionRef.id,
+                userId: "ai_participant",
+                userName: "AI しりとりくん",
+                createdAt: admin.firestore.Timestamp.now(),
+                sequenceNumber: after.currentSequence,
+                imageUrl: imageUrl,
+                storagePath: storagePath,
+                status: "processing",
+                aiResult: null,
+                validation: null,
+            });
+
+            console.log(`AI submission created: ${submissionRef.id} for room ${roomId}`);
+
+        } catch (error) {
+            console.error("Error in AI submission:", error);
+            // エラーが発生してもゲームは継続
         }
     });

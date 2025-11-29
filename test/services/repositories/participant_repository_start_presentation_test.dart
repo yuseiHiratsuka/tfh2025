@@ -16,6 +16,7 @@ Map<String, dynamic> _participantData({
     joinedAt: DateTime(2024),
     isReady: isReady,
     isMaster: isMaster,
+    isAI: false,
   ).toJson();
 }
 
