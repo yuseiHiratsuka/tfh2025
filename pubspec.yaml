@@ -29,6 +29,9 @@ dependencies:
   go_router: ^17.0.0
   firebase_auth: ^6.1.2
   firebase_storage: ^13.0.4
+  rive: ^0.14.0-dev.14
+
+  rive_native: ^0.0.17
 
 dev_dependencies:
   flutter_test:
@@ -36,6 +39,7 @@ dev_dependencies:
 
   fake_cloud_firestore: ^4.0.0
   firebase_auth_mocks: ^0.15.0
+  mock_exceptions: ^0.8.2
   flutter_lints: ^6.0.0
   build_runner: ^2.4.13
   custom_lint:
@@ -48,6 +52,7 @@ flutter:
 
   assets:
     - assets/image/
+    - assets/rive/
 
   fonts:
     - family: NicomojiPlus

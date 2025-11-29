@@ -46,6 +46,10 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
             roomId: widget.roomId,
             isReady: nextReady,
           );
+      // 準備完了を押したら準備完了待機画面に遷移
+      if (nextReady && mounted) {
+        context.go('/ready_waiting/${widget.roomId}');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

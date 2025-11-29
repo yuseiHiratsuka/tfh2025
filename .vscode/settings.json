@@ -6,7 +6,10 @@
       "source.fixAll": "explicit",
       "source.organizeImports": "explicit"
     },
-    "editor.rulers": [80, 120],
+    "editor.rulers": [
+      80,
+      120
+    ],
     "editor.selectionHighlight": true,
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
@@ -20,7 +23,11 @@
   "dart.previewFlutterUiGuidesCustomTracking": true,
   "dart.showTodos": true,
   "dart.enableSnippets": true,
-  "dart.analysisExcludedFolders": [".dart_tool", ".fvm", "build"],
+  "dart.analysisExcludedFolders": [
+    ".dart_tool",
+    ".fvm",
+    "build"
+  ],
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
   },
@@ -53,5 +60,10 @@
     "**/.git": true,
     "**/node_modules": true
   },
-  "cSpell.words": ["cupertino", "firestore", "Nicomoji", "riverpod"]
+  "cSpell.words": [
+    "cupertino",
+    "firestore",
+    "Nicomoji",
+    "riverpod"
+  ]
 }

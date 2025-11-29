@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:matcher/matcher.dart';
 import 'package:mock_exceptions/mock_exceptions.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
@@ -35,6 +33,7 @@ class _FakeFirebaseStorage implements FirebaseStorage {
 class _FakeReference implements Reference {
   _FakeReference(this.storage, this._path);
 
+  @override
   final _FakeFirebaseStorage storage;
   final String _path;
 
@@ -42,7 +41,8 @@ class _FakeReference implements Reference {
 
   @override
   Reference child(String path) {
-    final base = _normalizedPath.endsWith('/') ? _normalizedPath : '$_normalizedPath/';
+    final base =
+        _normalizedPath.endsWith('/') ? _normalizedPath : '$_normalizedPath/';
     final nextPath = path.startsWith('/') ? path : '$base$path';
     return _FakeReference(storage, nextPath);
   }
@@ -69,7 +69,8 @@ class _FakeReference implements Reference {
 
   @override
   Reference? get parent {
-    final segments = _normalizedPath.split('/')..removeWhere((segment) => segment.isEmpty);
+    final segments = _normalizedPath.split('/')
+      ..removeWhere((segment) => segment.isEmpty);
     if (segments.length <= 1) {
       return null;
     }
@@ -113,7 +114,7 @@ class _FakeUploadTask implements UploadTask {
       _future.then(onValue, onError: onError);
 
   @override
-  Future<TaskSnapshot> whenComplete(FutureOr Function() action) =>
+  Future<TaskSnapshot> whenComplete(FutureOr<void> Function() action) =>
       _future.whenComplete(action);
 
   @override
@@ -254,14 +255,20 @@ void main() {
         rawBytes: createImageBytes(),
       );
 
-      final submissionSnap = await roomRef.collection('submissions').doc(
-        submissionId,
-      ).get();
+      final submissionSnap = await roomRef
+          .collection('submissions')
+          .doc(
+            submissionId,
+          )
+          .get();
       expect(submissionSnap.exists, isTrue);
     });
 
     test('_compressToJpegで最大辺が800px以下にリサイズされる', () async {
-      await firestore.collection('rooms').doc(roomId).set({'currentSequence': 0});
+      await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .set({'currentSequence': 0});
 
       final submissionId = await repository.submitImageBytes(
         roomId: roomId,
@@ -286,7 +293,10 @@ void main() {
     });
 
     test('デコードできないバイト列ではStateErrorを投げる', () async {
-      await firestore.collection('rooms').doc(roomId).set({'currentSequence': 0});
+      await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .set({'currentSequence': 0});
 
       await expectLater(
         repository.submitImageBytes(
