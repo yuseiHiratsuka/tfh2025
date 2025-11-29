@@ -104,7 +104,7 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
 
       if (mounted) {
         // 待機画面へ遷移
-        context.go('/waiting_room/$roomId');
+        context.go('/waiting_room/$roomId?password=$passwordText');
       }
     } catch (e, stackTrace) {
       debugPrint('[PasswordPage] エラー: $e');

@@ -30,6 +30,7 @@ final router = GoRouter(
       path: '/waiting_room/:roomId',
       builder: (context, state) => WaitingRoomPage(
         roomId: state.pathParameters['roomId']!,
+        password: state.uri.queryParameters['password']!,
       ),
     ),
     GoRoute(

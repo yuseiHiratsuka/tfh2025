@@ -20,10 +20,12 @@ final _roomStreamProvider =
 class WaitingRoomPage extends ConsumerStatefulWidget {
   const WaitingRoomPage({
     required this.roomId,
+    required this.password,
     super.key,
   });
 
   final String roomId;
+  final String password;
 
   @override
   ConsumerState<WaitingRoomPage> createState() => _WaitingRoomPageState();
@@ -125,7 +127,7 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                             text: TextSpan(
                               children: [
                                 TextSpan(
-                                  text: '「${widget.roomId}」',
+                                  text: '「${widget.password}」',
                                   style: theme.textTheme.bodyLarge,
                                 ),
                                 TextSpan(
@@ -158,22 +160,21 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                                 final isMe =
                                     participant.userId == currentUserId;
 
-                                return _PlayerListTile(
-                                  displayName: participant.displayName,
-                                  isMe: isMe,
-                                  isMaster: participant.isMaster,
+                                return Padding(
+                                  padding: index == participants.length - 1
+                                      ? const EdgeInsets.only(
+                                          bottom: 80,
+                                        )
+                                      : EdgeInsetsGeometry.zero,
+                                  child: _PlayerListTile(
+                                    displayName: participant.displayName,
+                                    isMe: isMe,
+                                    isMaster: participant.isMaster,
+                                  ),
                                 );
                               },
                             ),
                           ),
-
-                          // ボタンエリア
-                          // Container(
-                          //   padding: const EdgeInsets.all(16),
-                          //   child: selfParticipant?.isMaster == true
-                          //       ? _buildMasterButton(theme)
-                          //       : _buildWaitingButton(theme),
-                          // ),
                         ],
                       );
                     },
