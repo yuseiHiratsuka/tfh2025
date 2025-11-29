@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "187308654656",
+    "project_id": "myakurakumaker",
+    "storage_bucket": "myakurakumaker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187308654656:android:43b7b81f788b357320dfa5",
+        "android_client_info": {
+          "package_name": "com.example.tfh2025"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwHmExnHRK6Qape1w7AwJe5AuikdyjY0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
