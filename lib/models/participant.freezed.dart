@@ -24,11 +24,15 @@ mixin _$Participant {
   @TimestampConverter()
   DateTime get joinedAt;
 
+  /// 準備完了フラグ
+  @JsonKey(defaultValue: false)
+  bool get isReady;
+
   /// アバター画像URL
   String? get avatarUrl;
 
   /// 最後の投稿日時
-  @TimestampConverter()
+  @NullableTimestampConverter()
   DateTime? get lastSubmittedAt;
 
   /// Create a copy of Participant
@@ -51,6 +55,7 @@ mixin _$Participant {
                 other.displayName == displayName) &&
             (identical(other.joinedAt, joinedAt) ||
                 other.joinedAt == joinedAt) &&
+            (identical(other.isReady, isReady) || other.isReady == isReady) &&
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.lastSubmittedAt, lastSubmittedAt) ||
@@ -59,12 +64,12 @@ mixin _$Participant {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, userId, displayName, joinedAt, avatarUrl, lastSubmittedAt);
+  int get hashCode => Object.hash(runtimeType, userId, displayName, joinedAt,
+      isReady, avatarUrl, lastSubmittedAt);
 
   @override
   String toString() {
-    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
   }
 }
 
@@ -78,8 +83,9 @@ abstract mixin class $ParticipantCopyWith<$Res> {
       {String userId,
       String displayName,
       @TimestampConverter() DateTime joinedAt,
+      @JsonKey(defaultValue: false) bool isReady,
       String? avatarUrl,
-      @TimestampConverter() DateTime? lastSubmittedAt});
+      @NullableTimestampConverter() DateTime? lastSubmittedAt});
 }
 
 /// @nodoc
@@ -97,6 +103,7 @@ class _$ParticipantCopyWithImpl<$Res> implements $ParticipantCopyWith<$Res> {
     Object? userId = null,
     Object? displayName = null,
     Object? joinedAt = null,
+    Object? isReady = null,
     Object? avatarUrl = freezed,
     Object? lastSubmittedAt = freezed,
   }) {
@@ -113,6 +120,10 @@ class _$ParticipantCopyWithImpl<$Res> implements $ParticipantCopyWith<$Res> {
           ? _self.joinedAt
           : joinedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      isReady: null == isReady
+          ? _self.isReady
+          : isReady // ignore: cast_nullable_to_non_nullable
+              as bool,
       avatarUrl: freezed == avatarUrl
           ? _self.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable
@@ -222,8 +233,9 @@ extension ParticipantPatterns on Participant {
             String userId,
             String displayName,
             @TimestampConverter() DateTime joinedAt,
+            @JsonKey(defaultValue: false) bool isReady,
             String? avatarUrl,
-            @TimestampConverter() DateTime? lastSubmittedAt)?
+            @NullableTimestampConverter() DateTime? lastSubmittedAt)?
         $default, {
     required TResult orElse(),
   }) {
@@ -231,7 +243,7 @@ extension ParticipantPatterns on Participant {
     switch (_that) {
       case _Participant() when $default != null:
         return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.avatarUrl, _that.lastSubmittedAt);
+            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
       case _:
         return orElse();
     }
@@ -256,15 +268,16 @@ extension ParticipantPatterns on Participant {
             String userId,
             String displayName,
             @TimestampConverter() DateTime joinedAt,
+            @JsonKey(defaultValue: false) bool isReady,
             String? avatarUrl,
-            @TimestampConverter() DateTime? lastSubmittedAt)
+            @NullableTimestampConverter() DateTime? lastSubmittedAt)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Participant():
         return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.avatarUrl, _that.lastSubmittedAt);
+            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -288,15 +301,16 @@ extension ParticipantPatterns on Participant {
             String userId,
             String displayName,
             @TimestampConverter() DateTime joinedAt,
+            @JsonKey(defaultValue: false) bool isReady,
             String? avatarUrl,
-            @TimestampConverter() DateTime? lastSubmittedAt)?
+            @NullableTimestampConverter() DateTime? lastSubmittedAt)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _Participant() when $default != null:
         return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.avatarUrl, _that.lastSubmittedAt);
+            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
       case _:
         return null;
     }
@@ -310,8 +324,9 @@ class _Participant extends Participant {
       {required this.userId,
       required this.displayName,
       @TimestampConverter() required this.joinedAt,
+      @JsonKey(defaultValue: false) required this.isReady,
       this.avatarUrl,
-      @TimestampConverter() this.lastSubmittedAt})
+      @NullableTimestampConverter() this.lastSubmittedAt})
       : super._();
   factory _Participant.fromJson(Map<String, dynamic> json) =>
       _$ParticipantFromJson(json);
@@ -329,13 +344,18 @@ class _Participant extends Participant {
   @TimestampConverter()
   final DateTime joinedAt;
 
+  /// 準備完了フラグ
+  @override
+  @JsonKey(defaultValue: false)
+  final bool isReady;
+
   /// アバター画像URL
   @override
   final String? avatarUrl;
 
   /// 最後の投稿日時
   @override
-  @TimestampConverter()
+  @NullableTimestampConverter()
   final DateTime? lastSubmittedAt;
 
   /// Create a copy of Participant
@@ -363,6 +383,7 @@ class _Participant extends Participant {
                 other.displayName == displayName) &&
             (identical(other.joinedAt, joinedAt) ||
                 other.joinedAt == joinedAt) &&
+            (identical(other.isReady, isReady) || other.isReady == isReady) &&
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.lastSubmittedAt, lastSubmittedAt) ||
@@ -371,12 +392,12 @@ class _Participant extends Participant {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, userId, displayName, joinedAt, avatarUrl, lastSubmittedAt);
+  int get hashCode => Object.hash(runtimeType, userId, displayName, joinedAt,
+      isReady, avatarUrl, lastSubmittedAt);
 
   @override
   String toString() {
-    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
   }
 }
 
@@ -392,8 +413,9 @@ abstract mixin class _$ParticipantCopyWith<$Res>
       {String userId,
       String displayName,
       @TimestampConverter() DateTime joinedAt,
+      @JsonKey(defaultValue: false) bool isReady,
       String? avatarUrl,
-      @TimestampConverter() DateTime? lastSubmittedAt});
+      @NullableTimestampConverter() DateTime? lastSubmittedAt});
 }
 
 /// @nodoc
@@ -411,6 +433,7 @@ class __$ParticipantCopyWithImpl<$Res> implements _$ParticipantCopyWith<$Res> {
     Object? userId = null,
     Object? displayName = null,
     Object? joinedAt = null,
+    Object? isReady = null,
     Object? avatarUrl = freezed,
     Object? lastSubmittedAt = freezed,
   }) {
@@ -427,6 +450,10 @@ class __$ParticipantCopyWithImpl<$Res> implements _$ParticipantCopyWith<$Res> {
           ? _self.joinedAt
           : joinedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      isReady: null == isReady
+          ? _self.isReady
+          : isReady // ignore: cast_nullable_to_non_nullable
+              as bool,
       avatarUrl: freezed == avatarUrl
           ? _self.avatarUrl
           : avatarUrl // ignore: cast_nullable_to_non_nullable

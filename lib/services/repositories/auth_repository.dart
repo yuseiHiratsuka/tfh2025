@@ -102,3 +102,8 @@ final authRepositoryProvider = Provider<AuthRepository>(
     return AuthRepository(firebaseAuth: auth);
   },
 );
+
+/// 認証状態のStream Provider（UI側で再ビルドさせるために利用）
+final authStateProvider = StreamProvider<User?>(
+  (ref) => ref.watch(firebaseAuthProvider).authStateChanges(),
+);

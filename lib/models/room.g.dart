@@ -23,11 +23,13 @@ _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
       isGoalReached: json['isGoalReached'] as bool,
       totalSubmissions: (json['totalSubmissions'] as num).toInt(),
       totalParticipants: (json['totalParticipants'] as num).toInt(),
+      readyCount: (json['readyCount'] as num?)?.toInt() ?? 0,
       failureReason:
           $enumDecodeNullable(_$FailureReasonEnumMap, json['failureReason']),
-      startedAt: const TimestampConverter().fromJson(json['startedAt']),
+      startedAt: const NullableTimestampConverter().fromJson(json['startedAt']),
       goalReachedBy: json['goalReachedBy'] as String?,
-      finishedAt: const TimestampConverter().fromJson(json['finishedAt']),
+      finishedAt:
+          const NullableTimestampConverter().fromJson(json['finishedAt']),
       score: (json['score'] as num?)?.toInt(),
       timeBonus: (json['timeBonus'] as num?)?.toInt(),
       chainBonus: (json['chainBonus'] as num?)?.toInt(),
@@ -49,12 +51,13 @@ Map<String, dynamic> _$RoomToJson(_Room instance) => <String, dynamic>{
       'isGoalReached': instance.isGoalReached,
       'totalSubmissions': instance.totalSubmissions,
       'totalParticipants': instance.totalParticipants,
+      'readyCount': instance.readyCount,
       'failureReason': _$FailureReasonEnumMap[instance.failureReason],
-      'startedAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.startedAt, const TimestampConverter().toJson),
+      'startedAt':
+          const NullableTimestampConverter().toJson(instance.startedAt),
       'goalReachedBy': instance.goalReachedBy,
-      'finishedAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.finishedAt, const TimestampConverter().toJson),
+      'finishedAt':
+          const NullableTimestampConverter().toJson(instance.finishedAt),
       'score': instance.score,
       'timeBonus': instance.timeBonus,
       'chainBonus': instance.chainBonus,
@@ -72,9 +75,3 @@ const _$FailureReasonEnumMap = {
   FailureReason.maxTurns: 'maxTurns',
   FailureReason.giveup: 'giveup',
 };
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);

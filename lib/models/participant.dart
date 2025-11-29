@@ -18,11 +18,14 @@ abstract class Participant with _$Participant {
     /// 参加日時
     @TimestampConverter() required DateTime joinedAt,
 
+    /// 準備完了フラグ
+    @JsonKey(defaultValue: false) required bool isReady,
+
     /// アバター画像URL
     String? avatarUrl,
 
     /// 最後の投稿日時
-    @TimestampConverter() DateTime? lastSubmittedAt,
+    @NullableTimestampConverter() DateTime? lastSubmittedAt,
   }) = _Participant;
 
   const Participant._();
@@ -41,6 +44,7 @@ abstract class Participant with _$Participant {
       displayName: displayName,
       avatarUrl: avatarUrl,
       joinedAt: DateTime.now(),
+      isReady: false,
     );
   }
 }

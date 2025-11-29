@@ -44,6 +44,7 @@
 | chainBonus | number \| null | △ | チェーンボーナス（オプション） | null |
 | totalSubmissions | number | ○ | 総投稿数 | 15 |
 | totalParticipants | number | ○ | 総参加者数 | 4 |
+| readyCount | number | ○ | 準備完了している参加者数 | 2 |
 
 **status の値:**
 - `waiting`: 参加者募集中
@@ -248,6 +249,7 @@
 | avatarUrl | string \| null | ○ | アバター画像URL | null |
 | joinedAt | Timestamp | ○ | 参加日時 | 2024-01-01 10:00:10 |
 | lastSubmittedAt | Timestamp \| null | ○ | 最後の投稿日時 | 2024-01-01 10:01:05 |
+| isReady | boolean | ○ | 準備完了フラグ | false |
 
 **インデックス:**
 ```
@@ -262,7 +264,8 @@
   "displayName": "プレイヤー1234",
   "avatarUrl": null,
   "joinedAt": "2024-01-01T10:00:10Z",
-  "lastSubmittedAt": null
+  "lastSubmittedAt": null,
+  "isReady": false
 }
 ```
 
@@ -634,7 +637,29 @@
 4. /rooms/{roomId}.totalParticipants が +1
 ```
 
-### 4.3 ゲーム開始フロー
+### 4.3 準備完了とゲーム開始フロー
+
+```
+1. クライアント（各参加者）
+   ↓ 準備ボタンを押す
+   Firestore.doc('rooms/{roomId}/participants/{userId}').update({
+     isReady: true
+   })
+   ↓
+   Firestore.doc('rooms/{roomId}').update({
+     readyCount: FieldValue.increment(1)
+   })
+
+2. 全参加者が入室済み（totalParticipants == maxPlayers）
+   かつ readyCount == maxPlayers のとき
+   ↓（トランザクション内で判定）
+   Firestore.doc('rooms/{roomId}').update({
+     status: 'playing',
+     startedAt: Timestamp.now()
+   })
+```
+
+### 4.4 ルーム開始更新（ホスト操作での直接開始を行う場合の補足）
 
 ```
 1. クライアント（ホストまたは参加者）
@@ -649,7 +674,7 @@
 3. クライアント側でタイマー開始
 ```
 
-### 4.4 投稿フロー
+### 4.5 投稿フロー
 
 ```
 1. クライアント
@@ -739,7 +764,7 @@
    ↓ UI更新
 ```
 
-### 4.5 タイムアウトフロー
+### 4.6 タイムアウトフロー
 
 ```
 1. クライアント側タイマーが制限時間到達
@@ -897,4 +922,3 @@ db.collection('rooms')
 - aiResult と validation は含まれていない
 
 ---
-

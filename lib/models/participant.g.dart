@@ -10,9 +10,10 @@ _Participant _$ParticipantFromJson(Map<String, dynamic> json) => _Participant(
       userId: json['userId'] as String,
       displayName: json['displayName'] as String,
       joinedAt: const TimestampConverter().fromJson(json['joinedAt']),
+      isReady: json['isReady'] as bool? ?? false,
       avatarUrl: json['avatarUrl'] as String?,
       lastSubmittedAt:
-          const TimestampConverter().fromJson(json['lastSubmittedAt']),
+          const NullableTimestampConverter().fromJson(json['lastSubmittedAt']),
     );
 
 Map<String, dynamic> _$ParticipantToJson(_Participant instance) =>
@@ -20,13 +21,8 @@ Map<String, dynamic> _$ParticipantToJson(_Participant instance) =>
       'userId': instance.userId,
       'displayName': instance.displayName,
       'joinedAt': const TimestampConverter().toJson(instance.joinedAt),
+      'isReady': instance.isReady,
       'avatarUrl': instance.avatarUrl,
-      'lastSubmittedAt': _$JsonConverterToJson<dynamic, DateTime>(
-          instance.lastSubmittedAt, const TimestampConverter().toJson),
+      'lastSubmittedAt':
+          const NullableTimestampConverter().toJson(instance.lastSubmittedAt),
     };
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);
