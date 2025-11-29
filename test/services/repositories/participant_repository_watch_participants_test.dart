@@ -44,7 +44,7 @@ void main() {
       await participantsRef.doc('late').set(
         _participantData(
           userId: 'late',
-          joinedAt: DateTime(2024, 2, 1),
+          joinedAt: DateTime(2024, 2),
         ),
       );
       await participantsRef.doc('broken').set(
@@ -58,7 +58,7 @@ void main() {
       await participantsRef.doc('early').set(
         _participantData(
           userId: 'early',
-          joinedAt: DateTime(2024, 1, 1),
+          joinedAt: DateTime(2024),
         ),
       );
 
