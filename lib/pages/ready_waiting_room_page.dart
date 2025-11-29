@@ -44,13 +44,17 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
   }
 
   Future<void> _loadRiveFile() async {
-    _riveFile = await File.asset(
-      'assets/rive/character.riv',
-      riveFactory: Factory.rive,
-    );
-    if (_riveFile != null) {
-      _controller = RiveWidgetController(_riveFile!);
-      setState(() {});
+    try {
+      _riveFile = await File.asset(
+        'assets/rive/character.riv',
+        riveFactory: Factory.rive,
+      );
+      if (_riveFile != null) {
+        _controller = RiveWidgetController(_riveFile!);
+        setState(() {});
+      }
+    } catch (e) {
+      // Riveファイルの読み込みに失敗してもエラーを表示しない
     }
   }
 

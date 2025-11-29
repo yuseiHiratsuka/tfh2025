@@ -119,7 +119,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                       final goalCharacter = data?['goalCharacter'] as String?;
 
                       if (startCharacter == null || goalCharacter == null) {
-                        return const Text('お題情報を取得中...');
+                        return const CircularProgressIndicator();
                       }
 
                       return Column(
