@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+printf "\e[33;1m%s\e[0m\n" 'Running Flutter analyzer'
+fvm flutter analyze --fatal-warnings --fatal-infos .
+
+# 分析コマンドの終了コードを保存
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  printf "\e[31;1m%s\e[0m\n" 'Flutter analyzer detected issues. Commit aborted.'
+  exit 1
+fi
+
+printf "\e[32;1m%s\e[0m\n" 'Flutter analyzer passed. Proceeding with commit.'

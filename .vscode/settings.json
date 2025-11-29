@@ -1,0 +1,60 @@
+{
+  "[dart]": {
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [80, 120],
+    "editor.selectionHighlight": true,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off"
+  },
+  "dart.flutterSdkPath": ".fvm/versions/3.38.3",
+  "dart.enableSdkFormatter": true,
+  "dart.lineLength": 80,
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "dart.showTodos": true,
+  "dart.enableSnippets": true,
+  "dart.analysisExcludedFolders": [
+    ".dart_tool",
+    ".fvm",
+    "build"
+  ],
+  "explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "files.associations": {
+    "*.dart": "dart"
+  },
+  "files.exclude": {
+    "**/.dart_tool": true,
+    "**/.flutter-plugins": true,
+    "**/.flutter-plugins-dependencies": true,
+    "**/.packages": true,
+    "**/.pub-cache": true,
+    "**/.pub": true,
+    "**/build": true
+  },
+  "files.watcherExclude": {
+    "**/.dart_tool/**": true,
+    "**/.fvm/**": true,
+    "**/build/**": true,
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true
+  },
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/.fvm": true,
+    "**/build": true,
+    "**/.git": true,
+    "**/node_modules": true
+  }
+}

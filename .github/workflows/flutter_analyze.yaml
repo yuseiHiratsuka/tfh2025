@@ -1,0 +1,60 @@
+name: Flutter Analyze
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    name: Analyze / OS ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      # PR HEAD Commitをチェックアウト
+      - name: Checks-out repo (PR HEAD)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      # .fvmrcファイルからFlutterバージョン＆チャンネルを取得
+      - name: Get flutter version & channel from .fvmrc
+        uses: kuhnroyal/flutter-fvm-config-action@v3
+        # 以下のオプションは.fvmrcファイルが別のパスにある場合に使用
+        # with:
+        #   path: 'path/to/.fvmrc'
+
+      # flutter SDK をインストール
+      - name: '[CACHE] flutter SDK'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:version:-:arch:-:hash:'
+          cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
+
+      # pub-cache のみキャッシュ（.dart_tool 等は除外）
+      - name: Cache pub deps
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.FLUTTER_HOME }}/.pub-cache
+          key: pubspec-${{ hashFiles('**/pubspec.lock') }}
+
+      # 常に pub get 実行（古い package_config の混入防止）
+      - name: Install pubspec dependencies
+        if: steps.cache_pubspec_dependencies.outputs.cache-hit != 'true'
+        run: flutter pub get
+
+      # Flutter Analyze
+      - name: Run `flutter analyze`
+        run: flutter analyze . --fatal-warnings --fatal-infos
