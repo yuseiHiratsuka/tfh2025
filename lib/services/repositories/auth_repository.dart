@@ -23,8 +23,10 @@ class AuthRepository {
 
     debugPrint('[AuthRepository] 匿名認証を開始します');
     debugPrint('[AuthRepository] FirebaseAuth app: ${_firebaseAuth.app.name}');
-    debugPrint('[AuthRepository] FirebaseAuth app options: ${_firebaseAuth.app.options.projectId}');
-    
+    debugPrint(
+      '[AuthRepository] FirebaseAuth app options: ${_firebaseAuth.app.options.projectId}',
+    );
+
     // 二重実行による内部エラーを避けるため、同一Futureを共有
     _signInFuture ??= _firebaseAuth.signInAnonymously().then((credential) {
       debugPrint('[AuthRepository] 匿名認証成功: userId=${credential.user?.uid}');
@@ -51,10 +53,14 @@ class AuthRepository {
         _signInFuture = null;
         throw StateError('匿名認証に失敗しました: ユーザー情報が取得できませんでした');
       }
-      debugPrint('[AuthRepository] signInAnonymouslyIfNeeded: 成功 userId=${user.uid}');
+      debugPrint(
+        '[AuthRepository] signInAnonymouslyIfNeeded: 成功 userId=${user.uid}',
+      );
       return user;
     } on FirebaseAuthException catch (e) {
-      debugPrint('[AuthRepository] FirebaseAuthException: code=${e.code}, message=${e.message}');
+      debugPrint(
+        '[AuthRepository] FirebaseAuthException: code=${e.code}, message=${e.message}',
+      );
       debugPrint('[AuthRepository] FirebaseAuthException詳細:');
       debugPrint('[AuthRepository]   code: ${e.code}');
       debugPrint('[AuthRepository]   message: ${e.message}');
@@ -63,7 +69,7 @@ class AuthRepository {
       debugPrint('[AuthRepository]   plugin: ${e.plugin}');
       debugPrint('[AuthRepository]   toString: ${e.toString()}');
       _signInFuture = null;
-      
+
       // internal-errorの場合、より詳細なメッセージを提供
       String errorMessage;
       if (e.code == 'internal-error') {
@@ -71,13 +77,15 @@ class AuthRepository {
             'エラー詳細: ${e.message ?? '不明なエラー'}';
         debugPrint('[AuthRepository] ⚠️ internal-errorが発生しました。');
         debugPrint('[AuthRepository] Firebase Consoleで以下を確認してください:');
-        debugPrint('[AuthRepository] 1. Authentication > Sign-in method > Anonymous が有効になっているか');
+        debugPrint(
+          '[AuthRepository] 1. Authentication > Sign-in method > Anonymous が有効になっているか',
+        );
         debugPrint('[AuthRepository] 2. プロジェクトの設定が正しいか');
         debugPrint('[AuthRepository] 3. GoogleService-Info.plistが正しく配置されているか');
       } else {
         errorMessage = '匿名認証に失敗しました: ${e.code} - ${e.message ?? '不明なエラー'}';
       }
-      
+
       throw StateError(errorMessage);
     } catch (e, stackTrace) {
       debugPrint('[AuthRepository] 予期しないエラー: $e');

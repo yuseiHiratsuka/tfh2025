@@ -17,108 +17,53 @@ final _roomStreamProvider =
 );
 
 class WaitingRoomPage extends ConsumerStatefulWidget {
-  const WaitingRoomPage({super.key});
+  const WaitingRoomPage({
+    required this.roomId,
+    super.key,
+  });
+
+  final String roomId;
 
   @override
   ConsumerState<WaitingRoomPage> createState() => _WaitingRoomPageState();
 }
 
 class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
-  late final TextEditingController _roomIdController;
-  late final TextEditingController _displayNameController;
-  bool _isJoining = false;
-  bool _hasNavigatedToGame = false;
+  bool _hasNavigatedToPresentation = false;
+  bool _isStarting = false;
 
   @override
   void initState() {
     super.initState();
-    _roomIdController = TextEditingController(text: 'L7qqB8lctYU9niXqOKOT');
-    _displayNameController = TextEditingController(
-      text: 'プレイヤー${DateTime.now().millisecondsSinceEpoch % 10000}',
-    );
-    _roomIdController.addListener(_onRoomIdChanged);
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
   }
 
-  @override
-  void dispose() {
-    _roomIdController.removeListener(_onRoomIdChanged);
-    _roomIdController.dispose();
-    _displayNameController.dispose();
-    super.dispose();
-  }
-
-  void _onRoomIdChanged() {
-    setState(() {
-      // roomIdが変更されたときに再ビルドして参加者一覧を更新
-      _hasNavigatedToGame = false;
-    });
-  }
-
-  Future<void> _toggleReady({
-    required String roomId,
-    required bool nextReady,
-  }) async {
-    try {
-      await ref
-          .read(participantRepositoryProvider)
-          .setReadyStatus(roomId: roomId, isReady: nextReady);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('準備状態の更新に失敗しました: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _joinRoom() async {
-    final roomIdText = _roomIdController.text.trim();
-    final nameText = _displayNameController.text.trim();
-    debugPrint(
-      '[WaitingRoomPage] _joinRoom: 開始 roomId=$roomIdText, displayName=$nameText',
-    );
-
-    if (roomIdText.isEmpty || nameText.isEmpty) {
-      debugPrint('[WaitingRoomPage] バリデーションエラー: 入力が空です');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ルームIDと表示名を入力してください')),
-        );
-      }
-      return;
-    }
+  /// マスターがゲーム開始ボタンを押した時の処理
+  Future<void> _startGame() async {
+    if (_isStarting) return;
 
     setState(() {
-      _isJoining = true;
+      _isStarting = true;
     });
 
     try {
-      debugPrint('[WaitingRoomPage] joinRoom呼び出し開始');
-      await ref.read(participantRepositoryProvider).joinRoom(
-            roomId: roomIdText,
-            displayName: nameText,
+      await ref.read(participantRepositoryProvider).startPresentation(
+            roomId: widget.roomId,
           );
-      debugPrint('[WaitingRoomPage] joinRoom成功');
+      debugPrint('[WaitingRoomPage] ゲーム開始処理成功');
+    } catch (e) {
+      debugPrint('[WaitingRoomPage] ゲーム開始処理エラー: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ルームに参加しました')),
-        );
-      }
-    } catch (e, stackTrace) {
-      debugPrint('[WaitingRoomPage] joinRoomエラー: $e');
-      debugPrint('[WaitingRoomPage] スタックトレース: $stackTrace');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('参加に失敗しました: $e')),
+          SnackBar(content: Text('ゲーム開始に失敗しました: $e')),
         );
       }
     } finally {
       if (mounted) {
         setState(() {
-          _isJoining = false;
+          _isStarting = false;
         });
       }
     }
@@ -126,26 +71,24 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final authState = ref.watch(authStateProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final roomId = _roomIdController.text.trim();
     final currentUserId =
         authState.value?.uid ?? ref.read(authRepositoryProvider).currentUserId;
-    final participantsAsync = roomId.isEmpty
-        ? const AsyncValue<List<Participant>>.data([])
-        : ref.watch(participantsStreamProvider(roomId));
-    final roomAsync = roomId.isEmpty
-        ? const AsyncValue<DocumentSnapshot<Map<String, dynamic>>>.loading()
-        : ref.watch(_roomStreamProvider(roomId));
+    final participantsAsync =
+        ref.watch(participantsStreamProvider(widget.roomId));
+    final roomAsync = ref.watch(_roomStreamProvider(widget.roomId));
 
-    // ルームステータスがplayingになったらお題提示画面へ
+    // ルームステータスがpresentingになったらお題提示画面へ
     roomAsync.whenData((room) {
       final status = room.data()?['status'] as String?;
-      if (status == 'playing' && !_hasNavigatedToGame && mounted) {
-        _hasNavigatedToGame = true;
+      if (status == 'presenting' && !_hasNavigatedToPresentation && mounted) {
+        _hasNavigatedToPresentation = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.go('/theme_presentation');
+            context.go('/theme_presentation/${widget.roomId}');
           }
         });
       }
@@ -249,66 +192,23 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                     children: [
                       Row(
                         children: [
-                          Text('準備状況: $readyCount / ${participants.length}'),
-                          const SizedBox(width: 12),
-                          roomAsync.when(
-                            data: (room) {
-                              final data = room.data();
-                              final maxPlayers = data?['maxPlayers'];
-                              if (maxPlayers is int && maxPlayers > 0) {
-                                return Text('(定員 $maxPlayers 人)');
-                              }
-                              return const SizedBox.shrink();
-                            },
-                            error: (_, __) => const SizedBox.shrink(),
-                            loading: () => const SizedBox.shrink(),
-                          ),
-                          const Spacer(),
-                          ElevatedButton.icon(
-                            onPressed: currentUserId == null
-                                ? null
-                                : () => _toggleReady(
-                                      roomId: roomId,
-                                      nextReady: !isSelfReady,
-                                    ),
-                            icon: Icon(
-                              isSelfReady
-                                  ? Icons.check_circle
-                                  : Icons.radio_button_unchecked,
+                          Text(
+                            '待機ルーム',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            label: Text(isSelfReady ? '準備解除' : '準備完了する'),
+                          ),
+                          Text(
+                            'ルームID: ${widget.roomId}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: participants.length,
-                          separatorBuilder: (_, __) => const Divider(),
-                          itemBuilder: (context, index) {
-                            final participant = participants[index];
-                            return ListTile(
-                              leading: Icon(
-                                participant.isReady
-                                    ? Icons.check_circle
-                                    : Icons.person,
-                                color:
-                                    participant.isReady ? Colors.green : null,
-                              ),
-                              title: Text(participant.displayName),
-                              subtitle: Text('参加: ${participant.joinedAt}'),
-                              trailing: Text(participant.userId),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                error: (error, _) =>
-                    Center(child: Text('参加者取得に失敗しました: $error')),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -331,7 +231,77 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                   },
                   child: const Text('キャンバス画面へ'),
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// マスター用の開始ボタン
+  Widget _buildMasterButton(ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: _isStarting ? null : _startGame,
+        icon: _isStarting
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.play_arrow),
+        label: Text(
+          _isStarting ? '開始中...' : 'ゲーム開始',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 非マスター用の待機中表示
+  Widget _buildWaitingButton(ThemeData theme) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: theme.colorScheme.outline,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'マスターの開始を待っています...',
+              style: TextStyle(
+                fontSize: 16,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
             ),
           ],
         ),

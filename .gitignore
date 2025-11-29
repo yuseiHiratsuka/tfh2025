@@ -46,3 +46,7 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Firebase Service Account Keys (DO NOT COMMIT!)
+serviceAccountKey.json
+**/serviceAccountKey*.json

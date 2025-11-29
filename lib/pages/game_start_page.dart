@@ -3,7 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:tfh2025/components/background.dart';
 
 class GameStartPage extends StatelessWidget {
-  const GameStartPage({super.key});
+  const GameStartPage({
+    required this.roomId,
+    super.key,
+  });
+
+  final String roomId;
 
   @override
   Widget build(BuildContext context) {
@@ -14,10 +19,18 @@ class GameStartPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
+                'ゲームスタート！',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
                 'みゃくラック',
                 style: TextStyle(fontSize: 64),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () => context.go('/canvas'),
                 child: const Text('キャンパス画面へ'),

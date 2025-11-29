@@ -3,6 +3,7 @@ import 'package:tfh2025/canvas.dart';
 import 'package:tfh2025/pages/final_result_page.dart';
 import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
+import 'package:tfh2025/pages/room_entry_page.dart';
 import 'package:tfh2025/pages/theme_presentation_page.dart';
 import 'package:tfh2025/pages/top_page.dart';
 import 'package:tfh2025/pages/waiting_room_page.dart';
@@ -15,16 +16,26 @@ final router = GoRouter(
       builder: (context, state) => const TopPage(),
     ),
     GoRoute(
-      path: '/waiting_room',
-      builder: (context, state) => const WaitingRoomPage(),
+      path: '/room_entry',
+      builder: (context, state) => const RoomEntryPage(),
     ),
     GoRoute(
-      path: '/theme_presentation',
-      builder: (context, state) => const ThemePresentationPage(),
+      path: '/waiting_room/:roomId',
+      builder: (context, state) => WaitingRoomPage(
+        roomId: state.pathParameters['roomId']!,
+      ),
     ),
     GoRoute(
-      path: '/game_start',
-      builder: (context, state) => const GameStartPage(),
+      path: '/theme_presentation/:roomId',
+      builder: (context, state) => ThemePresentationPage(
+        roomId: state.pathParameters['roomId']!,
+      ),
+    ),
+    GoRoute(
+      path: '/game_start/:roomId',
+      builder: (context, state) => GameStartPage(
+        roomId: state.pathParameters['roomId']!,
+      ),
     ),
     GoRoute(
       path: '/canvas',
