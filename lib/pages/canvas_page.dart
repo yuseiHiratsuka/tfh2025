@@ -151,16 +151,34 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   Future<String> _resolveDisplayName(String roomId) async {
     final authRepository = ref.read(authRepositoryProvider);
     final user = await authRepository.signInAnonymouslyIfNeeded();
-    final participants =
-        await ref.read(participantsStreamProvider(roomId).future);
 
-    for (final participant in participants) {
-      if (participant.userId == user.uid) {
-        return participant.displayName;
+    try {
+      final participants = await ref
+          .read(participantsStreamProvider(roomId).future)
+          .timeout(const Duration(seconds: 3));
+
+      for (final participant in participants) {
+        if (participant.userId == user.uid) {
+          return participant.displayName;
+        }
       }
+    } catch (e) {
+      // タイムアウトまたはエラーの場合は仮データで参加登録（モック用）
+      final participantRepository = ref.read(participantRepositoryProvider);
+      final newParticipant = await participantRepository.joinRoom(
+        roomId: roomId,
+        displayName: 'テストユーザー',
+      );
+      return newParticipant.displayName;
     }
 
-    throw StateError('参加者情報が見つかりませんでした。先にルームに参加してください。');
+    // 参加者が見つからない場合は仮データで参加登録（モック用）
+    final participantRepository = ref.read(participantRepositoryProvider);
+    final newParticipant = await participantRepository.joinRoom(
+      roomId: roomId,
+      displayName: 'テストユーザー',
+    );
+    return newParticipant.displayName;
   }
 
   Future<void> _submitDrawing() async {
