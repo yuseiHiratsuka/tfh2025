@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:tfh2025/pages/canvas_page.dart';
+import 'package:tfh2025/canvas.dart';
 import 'package:tfh2025/pages/final_result_page.dart';
 import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
