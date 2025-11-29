@@ -28,13 +28,36 @@ class App extends StatelessWidget {
       theme: AppTheme.light,
       routerConfig: router,
       builder: (context, child) {
-        return LoadingOverlay(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: child,
+        final theme = Theme.of(context);
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            padding: mediaQuery.padding +
+                const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
+          ),
+          child: LoadingOverlay(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.secondary,
+                    ],
+                  ),
+                ),
+                child: child,
+              ),
+            ),
           ),
         );
       },

@@ -113,6 +113,10 @@ class AppTheme {
         margin: const EdgeInsets.all(8),
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        tileColor: scheme.surfaceContainer,
+      ),
     );
   }
 }

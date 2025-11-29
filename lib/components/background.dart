@@ -9,7 +9,6 @@ class Background extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
 
     Widget buildChild(BuildContext context) {
       Widget effectiveChild = SafeArea(
@@ -23,27 +22,18 @@ class Background extends StatelessWidget {
       return effectiveChild;
     }
 
-    return MediaQuery(
-      data: mediaQuery.copyWith(
-        padding: mediaQuery.padding +
-            const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 24,
-            ),
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              theme.colorScheme.primary,
-              theme.colorScheme.secondary,
-            ],
-          ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.secondary,
+          ],
         ),
-        child: buildChild(context),
       ),
+      child: buildChild(context),
     );
   }
 }
