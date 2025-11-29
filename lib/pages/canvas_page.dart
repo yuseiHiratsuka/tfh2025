@@ -4,10 +4,13 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
+import 'package:tfh2025/models/room.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
+import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
@@ -216,6 +219,24 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ルームステータスを監視してゴール画面へ自動遷移
+    final roomId = widget.roomId;
+    if (roomId != null && roomId.isNotEmpty) {
+      ref.listen<AsyncValue<Room?>>(
+        roomStreamProvider(roomId),
+        (previous, next) {
+          next.whenData((room) {
+            if (room != null &&
+                (room.status == RoomStatus.success ||
+                    room.status == RoomStatus.failed)) {
+              // ゴール到達または失敗時に最終結果画面へ遷移
+              context.go('/final_result/$roomId');
+            }
+          });
+        },
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
