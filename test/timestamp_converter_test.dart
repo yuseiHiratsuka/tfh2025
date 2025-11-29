@@ -8,7 +8,7 @@ void main() {
     const converter = TimestampConverter();
 
     test('accepts DateTime directly', () {
-      final now = DateTime(2025, 1, 1, 12, 0, 0);
+      final now = DateTime(2025, 1, 1, 12);
       final result = converter.fromJson(now);
 
       expect(result, now);
@@ -22,7 +22,7 @@ void main() {
     });
 
     test('converts epoch milliseconds to DateTime', () {
-      final source = DateTime.utc(2024, 5, 10, 12, 30, 0);
+      final source = DateTime.utc(2024, 5, 10, 12, 30);
       final result = converter.fromJson(source.millisecondsSinceEpoch);
 
       expect(result.isAtSameMomentAs(source), isTrue);
@@ -44,7 +44,7 @@ void main() {
     const converter = NullableTimestampConverter();
 
     test('accepts nullable DateTime', () {
-      final now = DateTime(2025, 6, 1, 9, 30, 0);
+      final now = DateTime(2025, 6, 1, 9, 30);
       final result = converter.fromJson(now);
       final nullResult = converter.fromJson(null);
 
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('converts Timestamp, int, and string inputs', () {
-      final source = DateTime.utc(2024, 7, 1, 8, 0, 0);
+      final source = DateTime.utc(2024, 7, 1, 8);
 
       final timestampResult = converter.fromJson(Timestamp.fromDate(source))!;
       final millisResult = converter.fromJson(source.millisecondsSinceEpoch)!;

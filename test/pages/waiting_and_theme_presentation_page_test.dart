@@ -43,7 +43,7 @@ Participant _participant({
   return Participant(
     userId: userId,
     displayName: 'user-$userId',
-    joinedAt: DateTime(2024, 1, 1),
+    joinedAt: DateTime(2024),
     isReady: false,
     isMaster: isMaster,
   );
@@ -262,8 +262,8 @@ void main() {
           firestore: firestore,
           auth: auth,
           router: router,
-          participantsStream: Stream<List<Participant>>.empty(),
-          participantsOverride: AsyncError<List<Participant>>(
+          participantsStream: const Stream<List<Participant>>.empty(),
+          participantsOverride: const AsyncError<List<Participant>>(
             'boom',
             StackTrace.empty,
           ),

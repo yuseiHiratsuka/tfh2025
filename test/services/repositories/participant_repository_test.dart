@@ -62,7 +62,7 @@ void main() {
       final existingParticipant = Participant(
         userId: userId,
         displayName: 'existing-user',
-        joinedAt: DateTime(2024, 1, 1),
+        joinedAt: DateTime(2024),
         isReady: false,
         isMaster: true,
       );
@@ -108,7 +108,7 @@ void main() {
     late MockFirebaseAuth auth;
     late ParticipantRepository repository;
 
-    Future<void> _createParticipant({required bool isReady}) {
+    Future<void> createParticipant({required bool isReady}) {
       return firestore
           .collection('rooms')
           .doc(roomId)
@@ -117,7 +117,7 @@ void main() {
           .set({
         'userId': userId,
         'displayName': 'user',
-        'joinedAt': DateTime(2024, 1, 1),
+        'joinedAt': DateTime(2024),
         'isReady': isReady,
         'isMaster': false,
       });
@@ -141,7 +141,7 @@ void main() {
         'totalParticipants': 2,
         'status': 'waiting',
       });
-      await _createParticipant(isReady: false);
+      await createParticipant(isReady: false);
 
       await repository.setReadyStatus(roomId: roomId, isReady: true);
 
@@ -173,14 +173,14 @@ void main() {
     });
 
     test('同じ状態で呼ぶとreadyCountや更新時刻を変更せずに早期リターンする', () async {
-      final initialUpdatedAt = DateTime(2024, 2, 1);
+      final initialUpdatedAt = DateTime(2024, 2);
       await firestore.collection('rooms').doc(roomId).set({
         'readyCount': 1,
         'totalParticipants': 2,
         'status': 'waiting',
         'updatedAt': initialUpdatedAt,
       });
-      await _createParticipant(isReady: true);
+      await createParticipant(isReady: true);
 
       await repository.setReadyStatus(roomId: roomId, isReady: true);
 
@@ -207,7 +207,7 @@ void main() {
         'totalParticipants': 2,
         'status': 'presenting',
       });
-      await _createParticipant(isReady: false);
+      await createParticipant(isReady: false);
 
       await repository.setReadyStatus(roomId: roomId, isReady: true);
 

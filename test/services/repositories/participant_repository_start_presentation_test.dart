@@ -13,7 +13,7 @@ Map<String, dynamic> _participantData({
   return Participant(
     userId: userId,
     displayName: 'user-$userId',
-    joinedAt: DateTime(2024, 1, 1),
+    joinedAt: DateTime(2024),
     isReady: isReady,
     isMaster: isMaster,
   ).toJson();
