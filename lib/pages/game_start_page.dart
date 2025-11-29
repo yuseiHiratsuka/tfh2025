@@ -34,7 +34,7 @@ class GameStartPage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               ElevatedButton(
-                onPressed: () => context.go('/canvas'),
+                onPressed: () => context.go('/canvas?roomId=$roomId'),
                 child: const Text('キャンバス画面へ'),
               ),
             ],
