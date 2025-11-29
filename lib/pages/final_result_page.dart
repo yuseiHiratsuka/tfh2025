@@ -218,7 +218,8 @@ class _FinalResultSliverAppBar extends StatelessWidget {
                 runSpacing: 4,
                 alignment: WrapAlignment.center,
                 children: [
-                  const _HeaderInfoPill(label: '残りタイム : 0秒'),
+                  _HeaderInfoPill(
+                      label: '残りタイム : ${room.remainingTime ?? 0}秒',),
                   _HeaderInfoPill(label: 'コンボ数 : ${room.chainCount}回'),
                 ],
               ),
