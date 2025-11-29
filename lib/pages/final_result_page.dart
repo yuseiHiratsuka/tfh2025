@@ -136,6 +136,15 @@ class _FinalResultSliverAppBar extends StatelessWidget {
 
   final Room room;
 
+  String _getRankLabel(int score) {
+    if (score <= 50) return 'かす素人';
+    if (score <= 250) return '素人に毛が生えた程度';
+    if (score <= 1000) return '普通';
+    if (score <= 5000) return '部活でやってた？';
+    if (score <= 10000) return 'なかなかやるね';
+    return 'チート級';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -171,7 +180,7 @@ class _FinalResultSliverAppBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
-                'かす素人',
+                _getRankLabel(room.score ?? 0),
                 style: textTheme.titleLarge?.copyWith(
                   fontSize: 38,
                   color: Colors.white,
