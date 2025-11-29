@@ -21,10 +21,13 @@ class HomePage extends HookConsumerWidget {
       ),
     );
 
-    useEffect(() {
-      animationController.forward();
-      return null;
-    }, []);
+    useEffect(
+      () {
+        animationController.forward();
+        return null;
+      },
+      [],
+    );
 
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;

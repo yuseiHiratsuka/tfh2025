@@ -308,7 +308,6 @@
 | フィールド名 | 型 | 必須 | 説明 | 例 |
 |------------|---|------|------|---|
 | word | string | ○ | 認識された単語（ひらがな） | "りんご" |
-| confidence | number | ○ | 信頼度（0.0〜1.0） | 0.95 |
 | firstChar | string | ○ | 最初の文字（ひらがな1文字） | "り" |
 | lastChar | string | ○ | 最後の文字（ひらがな1文字） | "ご" |
 | recognizedAt | Timestamp | ○ | 認識完了日時 | 2024-01-01 10:00:40 |
@@ -377,7 +376,6 @@
   "status": "completed",
   "aiResult": {
     "word": "りんご",
-    "confidence": 0.95,
     "firstChar": "り",
     "lastChar": "ご",
     "recognizedAt": "2024-01-01T10:00:40Z"
@@ -401,7 +399,6 @@
   "status": "completed",
   "aiResult": {
     "word": "りんご",
-    "confidence": 0.95,
     "firstChar": "り",
     "lastChar": "ご",
     "recognizedAt": "2024-01-01T10:00:40Z"
@@ -433,7 +430,6 @@
   "status": "completed",
   "aiResult": {
     "word": "りす",
-    "confidence": 0.92,
     "firstChar": "り",
     "lastChar": "す",
     "recognizedAt": "2024-01-01T10:00:43Z"
@@ -465,7 +461,6 @@
   "status": "completed",
   "aiResult": {
     "word": "ねこ",
-    "confidence": 0.88,
     "firstChar": "ね",
     "lastChar": "こ",
     "recognizedAt": "2024-01-01T10:00:41Z"
@@ -497,7 +492,6 @@
   "status": "completed",
   "aiResult": {
     "word": "りんご",
-    "confidence": 0.95,
     "firstChar": "り",
     "lastChar": "ご",
     "recognizedAt": "2024-01-01T10:00:40Z"
@@ -530,7 +524,6 @@
   "status": "completed",
   "aiResult": {
     "word": "まき",
-    "confidence": 0.91,
     "firstChar": "ま",
     "lastChar": "き",
     "recognizedAt": "2024-01-01T10:01:13Z"
@@ -687,13 +680,14 @@
 
 5. Cloud Functions: processSubmissionImage トリガー（onCreate）
    ↓ 
-   Gemini Vision API 呼び出し
+   Gemini Vision API 呼び出し(wordだけ生成)
+   ↓
+   AI結果を元にfirstCharとlastChar,recognizedAtを生成
    ↓
    Firestore.doc('rooms/{roomId}/submissions/{submissionId}').update({
      status: 'completed',
      aiResult: {
        word: 'りんご',
-       confidence: 0.95,
        firstChar: 'り',
        lastChar: 'ご',
        recognizedAt: Timestamp.now()

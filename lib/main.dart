@@ -5,6 +5,7 @@ import 'package:tfh2025/theme/app_theme.dart';
 
 import 'services/repositories/test_repository.dart';
 import 'firebase_options.dart';
+import 'router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,14 +20,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'TFH 2025',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      home: MyHomePage(
-        title: 'Flutter Demo Home Page',
-        testRepository: testRepository,
-      ),
+      routerConfig: router,
     );
   }
 }
