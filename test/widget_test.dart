@@ -7,9 +7,9 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tfh2025/main.dart';
 import 'package:tfh2025/services/data/datasources/firestore_datasource.dart';
 import 'package:tfh2025/services/repositories/test_repository.dart';
-import 'package:tfh2025/main.dart';
 
 /// テスト用のモックFirestoreDatasource
 /// Firebaseに依存しない独立した実装
@@ -48,7 +48,5 @@ void main() {
         child: App(),
       ),
     );
-
-    // 必ず通るテスト（検証なし）
   });
 }
