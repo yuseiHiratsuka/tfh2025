@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
 import 'package:tfh2025/models/room.dart';
@@ -253,6 +254,21 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
         ),
       );
     }
+
+    // ルームステータスを監視してゴール画面へ自動遷移
+    ref.listen<AsyncValue<Room?>>(
+      roomStreamProvider(roomId),
+      (previous, next) {
+        next.whenData((room) {
+          if (room != null &&
+              (room.status == RoomStatus.success ||
+                  room.status == RoomStatus.failed)) {
+            // ゴール到達または失敗時に最終結果画面へ遷移
+            context.go('/final_result/$roomId');
+          }
+        });
+      },
+    );
 
     final roomAsync = ref.watch(roomStreamProvider(roomId));
 
