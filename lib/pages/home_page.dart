@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tfh2025/theme/app_theme.dart';
 
 import 'home_page_controller.dart';
 
@@ -35,14 +36,13 @@ class HomePage extends HookConsumerWidget {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              colorScheme.surface,
-              colorScheme.surface.withValues(alpha: 0.8),
-              colorScheme.primary.withValues(alpha: 0.1),
+              AppColors.backgroundStart,
+              AppColors.backgroundEnd,
             ],
           ),
         ),

@@ -4,11 +4,16 @@ import 'package:tfh2025/pages/final_result_page.dart';
 import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
 import 'package:tfh2025/pages/theme_presentation_page.dart';
+import 'package:tfh2025/pages/top_page.dart';
 import 'package:tfh2025/pages/waiting_room_page.dart';
 
 final router = GoRouter(
-  initialLocation: '/waiting_room',
+  initialLocation: '/top',
   routes: [
+    GoRoute(
+      path: '/top',
+      builder: (context, state) => const TopPage(),
+    ),
     GoRoute(
       path: '/waiting_room',
       builder: (context, state) => const WaitingRoomPage(),
