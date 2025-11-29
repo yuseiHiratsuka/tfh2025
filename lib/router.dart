@@ -51,8 +51,10 @@ final router = GoRouter(
       builder: (context, state) => const JudgingPage(),
     ),
     GoRoute(
-      path: '/final_result',
-      builder: (context, state) => const FinalResultPage(),
+      path: '/final_result/:roomId',
+      builder: (context, state) => FinalResultPage(
+        roomId: state.pathParameters['roomId']!,
+      ),
     ),
   ],
 );

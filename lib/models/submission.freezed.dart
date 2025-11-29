@@ -429,7 +429,8 @@ extension SubmissionPatterns on Submission {
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _Submission extends Submission {
   const _Submission(
       {required this.id,

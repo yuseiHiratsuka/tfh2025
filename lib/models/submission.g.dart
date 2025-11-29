@@ -33,8 +33,8 @@ Map<String, dynamic> _$SubmissionToJson(_Submission instance) =>
       'imageUrl': instance.imageUrl,
       'storagePath': instance.storagePath,
       'status': _$SubmissionStatusEnumMap[instance.status]!,
-      'aiResult': instance.aiResult,
-      'validation': instance.validation,
+      'aiResult': instance.aiResult?.toJson(),
+      'validation': instance.validation?.toJson(),
     };
 
 const _$SubmissionStatusEnumMap = {

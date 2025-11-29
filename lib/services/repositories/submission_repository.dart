@@ -114,6 +114,20 @@ class SubmissionRepository {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return 'rooms/$roomId/submissions/${userId}_$timestamp.jpg';
   }
+
+  /// 採用された投稿一覧（採用順）のストリーム
+  Stream<List<Map<String, dynamic>>> watchAdoptedSubmissions(String roomId) {
+    return _firestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('submissions')
+        .where('validation.isAdopted', isEqualTo: true)
+        .orderBy('validation.adoptionOrder', descending: false)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
 }
 
 /// SubmissionRepository プロバイダー
