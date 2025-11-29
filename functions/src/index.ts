@@ -254,8 +254,10 @@ export const validateAndAdoptSubmission = functions
                 // ゴール達成時のスコア計算
                 if (isGoalReached) {
                     const score = newChainCount * 100; // 簡単なスコア計算例
-                    roomUpdate.status = "completed";
-                    roomUpdate.completedAt = admin.firestore.Timestamp.now();
+                    roomUpdate.status = "success";
+                    roomUpdate.isGoalReached = true;
+                    roomUpdate.goalReachedBy = userId;
+                    roomUpdate.finishedAt = admin.firestore.Timestamp.now();
                     roomUpdate.score = score;
                 }
 
