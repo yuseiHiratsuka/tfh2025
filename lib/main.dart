@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tfh2025/theme/app_theme.dart';
 
-import 'services/repositories/test_repository.dart';
 import 'firebase_options.dart';
+import 'painter.dart';
 import 'router.dart';
+import 'services/repositories/test_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -141,6 +142,17 @@ class _MyHomePageState extends State<MyHomePage> {
                 ).textTheme.bodyMedium?.copyWith(color: Colors.red),
               ),
             ],
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PainterPage(),
+                  ),
+                );
+              },
+              child: const Text('画面遷移'),
+            ),
           ],
         ),
       ),
