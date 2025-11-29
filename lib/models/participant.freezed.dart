@@ -14,286 +14,429 @@ T _$identity<T>(T value) => value;
 
 /// @nodoc
 mixin _$Participant {
+  /// ユーザーID（匿名認証のUID）
+  String get userId;
 
-/// ユーザーID（匿名認証のUID）
- String get userId;/// 表示名
- String get displayName;/// 参加日時
-@TimestampConverter() DateTime get joinedAt;/// アバター画像URL
- String? get avatarUrl;/// 最後の投稿日時
-@TimestampConverter() DateTime? get lastSubmittedAt;
-/// Create a copy of Participant
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ParticipantCopyWith<Participant> get copyWith => _$ParticipantCopyWithImpl<Participant>(this as Participant, _$identity);
+  /// 表示名
+  String get displayName;
+
+  /// 参加日時
+  @TimestampConverter()
+  DateTime get joinedAt;
+
+  /// アバター画像URL
+  String? get avatarUrl;
+
+  /// 最後の投稿日時
+  @TimestampConverter()
+  DateTime? get lastSubmittedAt;
+
+  /// Create a copy of Participant
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  $ParticipantCopyWith<Participant> get copyWith =>
+      _$ParticipantCopyWithImpl<Participant>(this as Participant, _$identity);
 
   /// Serializes this Participant to a JSON map.
   Map<String, dynamic> toJson();
 
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Participant &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.joinedAt, joinedAt) ||
+                other.joinedAt == joinedAt) &&
+            (identical(other.avatarUrl, avatarUrl) ||
+                other.avatarUrl == avatarUrl) &&
+            (identical(other.lastSubmittedAt, lastSubmittedAt) ||
+                other.lastSubmittedAt == lastSubmittedAt));
+  }
 
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Participant&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.lastSubmittedAt, lastSubmittedAt) || other.lastSubmittedAt == lastSubmittedAt));
-}
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, userId, displayName, joinedAt, avatarUrl, lastSubmittedAt);
 
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,userId,displayName,joinedAt,avatarUrl,lastSubmittedAt);
-
-@override
-String toString() {
-  return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
-}
-
-
+  @override
+  String toString() {
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+  }
 }
 
 /// @nodoc
-abstract mixin class $ParticipantCopyWith<$Res>  {
-  factory $ParticipantCopyWith(Participant value, $Res Function(Participant) _then) = _$ParticipantCopyWithImpl;
-@useResult
-$Res call({
- String userId, String displayName,@TimestampConverter() DateTime joinedAt, String? avatarUrl,@TimestampConverter() DateTime? lastSubmittedAt
-});
-
-
-
-
+abstract mixin class $ParticipantCopyWith<$Res> {
+  factory $ParticipantCopyWith(
+          Participant value, $Res Function(Participant) _then) =
+      _$ParticipantCopyWithImpl;
+  @useResult
+  $Res call(
+      {String userId,
+      String displayName,
+      @TimestampConverter() DateTime joinedAt,
+      String? avatarUrl,
+      @TimestampConverter() DateTime? lastSubmittedAt});
 }
+
 /// @nodoc
-class _$ParticipantCopyWithImpl<$Res>
-    implements $ParticipantCopyWith<$Res> {
+class _$ParticipantCopyWithImpl<$Res> implements $ParticipantCopyWith<$Res> {
   _$ParticipantCopyWithImpl(this._self, this._then);
 
   final Participant _self;
   final $Res Function(Participant) _then;
 
-/// Create a copy of Participant
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? userId = null,Object? displayName = null,Object? joinedAt = null,Object? avatarUrl = freezed,Object? lastSubmittedAt = freezed,}) {
-  return _then(_self.copyWith(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
-as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,lastSubmittedAt: freezed == lastSubmittedAt ? _self.lastSubmittedAt : lastSubmittedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
-  ));
+  /// Create a copy of Participant
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? userId = null,
+    Object? displayName = null,
+    Object? joinedAt = null,
+    Object? avatarUrl = freezed,
+    Object? lastSubmittedAt = freezed,
+  }) {
+    return _then(_self.copyWith(
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: null == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String,
+      joinedAt: null == joinedAt
+          ? _self.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      avatarUrl: freezed == avatarUrl
+          ? _self.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastSubmittedAt: freezed == lastSubmittedAt
+          ? _self.lastSubmittedAt
+          : lastSubmittedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
 }
-
-}
-
 
 /// Adds pattern-matching-related methods to [Participant].
 extension ParticipantPatterns on Participant {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
+  /// A variant of `map` that fallback to returning `orElse`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _Participant value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _Participant() when $default != null:
-return $default(_that);case _:
-  return orElse();
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>(
+    TResult Function(_Participant value)? $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Participant() when $default != null:
+        return $default(_that);
+      case _:
+        return orElse();
+    }
+  }
 
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _Participant value)  $default,){
-final _that = this;
-switch (_that) {
-case _Participant():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>(
+    TResult Function(_Participant value) $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Participant():
+        return $default(_that);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
 
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
+  /// A variant of `map` that fallback to returning `null`.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _Participant value)?  $default,){
-final _that = this;
-switch (_that) {
-case _Participant() when $default != null:
-return $default(_that);case _:
-  return null;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>(
+    TResult? Function(_Participant value)? $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Participant() when $default != null:
+        return $default(_that);
+      case _:
+        return null;
+    }
+  }
 
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
+  /// A variant of `when` that fallback to an `orElse` callback.
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return orElse();
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String userId,  String displayName, @TimestampConverter()  DateTime joinedAt,  String? avatarUrl, @TimestampConverter()  DateTime? lastSubmittedAt)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _Participant() when $default != null:
-return $default(_that.userId,_that.displayName,_that.joinedAt,_that.avatarUrl,_that.lastSubmittedAt);case _:
-  return orElse();
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>(
+    TResult Function(
+            String userId,
+            String displayName,
+            @TimestampConverter() DateTime joinedAt,
+            String? avatarUrl,
+            @TimestampConverter() DateTime? lastSubmittedAt)?
+        $default, {
+    required TResult orElse(),
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Participant() when $default != null:
+        return $default(_that.userId, _that.displayName, _that.joinedAt,
+            _that.avatarUrl, _that.lastSubmittedAt);
+      case _:
+        return orElse();
+    }
+  }
 
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// As opposed to `map`, this offers destructuring.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case Subclass2(:final field2):
+  ///     return ...;
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String userId,  String displayName, @TimestampConverter()  DateTime joinedAt,  String? avatarUrl, @TimestampConverter()  DateTime? lastSubmittedAt)  $default,) {final _that = this;
-switch (_that) {
-case _Participant():
-return $default(_that.userId,_that.displayName,_that.joinedAt,_that.avatarUrl,_that.lastSubmittedAt);case _:
-  throw StateError('Unexpected subclass');
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>(
+    TResult Function(
+            String userId,
+            String displayName,
+            @TimestampConverter() DateTime joinedAt,
+            String? avatarUrl,
+            @TimestampConverter() DateTime? lastSubmittedAt)
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Participant():
+        return $default(_that.userId, _that.displayName, _that.joinedAt,
+            _that.avatarUrl, _that.lastSubmittedAt);
+      case _:
+        throw StateError('Unexpected subclass');
+    }
+  }
 
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
+  /// A variant of `when` that fallback to returning `null`
+  ///
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case Subclass(:final field):
+  ///     return ...;
+  ///   case _:
+  ///     return null;
+  /// }
+  /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String userId,  String displayName, @TimestampConverter()  DateTime joinedAt,  String? avatarUrl, @TimestampConverter()  DateTime? lastSubmittedAt)?  $default,) {final _that = this;
-switch (_that) {
-case _Participant() when $default != null:
-return $default(_that.userId,_that.displayName,_that.joinedAt,_that.avatarUrl,_that.lastSubmittedAt);case _:
-  return null;
-
-}
-}
-
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>(
+    TResult? Function(
+            String userId,
+            String displayName,
+            @TimestampConverter() DateTime joinedAt,
+            String? avatarUrl,
+            @TimestampConverter() DateTime? lastSubmittedAt)?
+        $default,
+  ) {
+    final _that = this;
+    switch (_that) {
+      case _Participant() when $default != null:
+        return $default(_that.userId, _that.displayName, _that.joinedAt,
+            _that.avatarUrl, _that.lastSubmittedAt);
+      case _:
+        return null;
+    }
+  }
 }
 
 /// @nodoc
 @JsonSerializable()
-
 class _Participant extends Participant {
-  const _Participant({required this.userId, required this.displayName, @TimestampConverter() required this.joinedAt, this.avatarUrl, @TimestampConverter() this.lastSubmittedAt}): super._();
-  factory _Participant.fromJson(Map<String, dynamic> json) => _$ParticipantFromJson(json);
+  const _Participant(
+      {required this.userId,
+      required this.displayName,
+      @TimestampConverter() required this.joinedAt,
+      this.avatarUrl,
+      @TimestampConverter() this.lastSubmittedAt})
+      : super._();
+  factory _Participant.fromJson(Map<String, dynamic> json) =>
+      _$ParticipantFromJson(json);
 
-/// ユーザーID（匿名認証のUID）
-@override final  String userId;
-/// 表示名
-@override final  String displayName;
-/// 参加日時
-@override@TimestampConverter() final  DateTime joinedAt;
-/// アバター画像URL
-@override final  String? avatarUrl;
-/// 最後の投稿日時
-@override@TimestampConverter() final  DateTime? lastSubmittedAt;
+  /// ユーザーID（匿名認証のUID）
+  @override
+  final String userId;
 
-/// Create a copy of Participant
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$ParticipantCopyWith<_Participant> get copyWith => __$ParticipantCopyWithImpl<_Participant>(this, _$identity);
+  /// 表示名
+  @override
+  final String displayName;
 
-@override
-Map<String, dynamic> toJson() {
-  return _$ParticipantToJson(this, );
-}
+  /// 参加日時
+  @override
+  @TimestampConverter()
+  final DateTime joinedAt;
 
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Participant&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.joinedAt, joinedAt) || other.joinedAt == joinedAt)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.lastSubmittedAt, lastSubmittedAt) || other.lastSubmittedAt == lastSubmittedAt));
-}
+  /// アバター画像URL
+  @override
+  final String? avatarUrl;
 
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,userId,displayName,joinedAt,avatarUrl,lastSubmittedAt);
+  /// 最後の投稿日時
+  @override
+  @TimestampConverter()
+  final DateTime? lastSubmittedAt;
 
-@override
-String toString() {
-  return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
-}
+  /// Create a copy of Participant
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ParticipantCopyWith<_Participant> get copyWith =>
+      __$ParticipantCopyWithImpl<_Participant>(this, _$identity);
 
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ParticipantToJson(
+      this,
+    );
+  }
 
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _Participant &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.joinedAt, joinedAt) ||
+                other.joinedAt == joinedAt) &&
+            (identical(other.avatarUrl, avatarUrl) ||
+                other.avatarUrl == avatarUrl) &&
+            (identical(other.lastSubmittedAt, lastSubmittedAt) ||
+                other.lastSubmittedAt == lastSubmittedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, userId, displayName, joinedAt, avatarUrl, lastSubmittedAt);
+
+  @override
+  String toString() {
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+  }
 }
 
 /// @nodoc
-abstract mixin class _$ParticipantCopyWith<$Res> implements $ParticipantCopyWith<$Res> {
-  factory _$ParticipantCopyWith(_Participant value, $Res Function(_Participant) _then) = __$ParticipantCopyWithImpl;
-@override @useResult
-$Res call({
- String userId, String displayName,@TimestampConverter() DateTime joinedAt, String? avatarUrl,@TimestampConverter() DateTime? lastSubmittedAt
-});
-
-
-
-
+abstract mixin class _$ParticipantCopyWith<$Res>
+    implements $ParticipantCopyWith<$Res> {
+  factory _$ParticipantCopyWith(
+          _Participant value, $Res Function(_Participant) _then) =
+      __$ParticipantCopyWithImpl;
+  @override
+  @useResult
+  $Res call(
+      {String userId,
+      String displayName,
+      @TimestampConverter() DateTime joinedAt,
+      String? avatarUrl,
+      @TimestampConverter() DateTime? lastSubmittedAt});
 }
+
 /// @nodoc
-class __$ParticipantCopyWithImpl<$Res>
-    implements _$ParticipantCopyWith<$Res> {
+class __$ParticipantCopyWithImpl<$Res> implements _$ParticipantCopyWith<$Res> {
   __$ParticipantCopyWithImpl(this._self, this._then);
 
   final _Participant _self;
   final $Res Function(_Participant) _then;
 
-/// Create a copy of Participant
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? userId = null,Object? displayName = null,Object? joinedAt = null,Object? avatarUrl = freezed,Object? lastSubmittedAt = freezed,}) {
-  return _then(_Participant(
-userId: null == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
-as String,displayName: null == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
-as String,joinedAt: null == joinedAt ? _self.joinedAt : joinedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
-as String?,lastSubmittedAt: freezed == lastSubmittedAt ? _self.lastSubmittedAt : lastSubmittedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
-  ));
-}
-
-
+  /// Create a copy of Participant
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? userId = null,
+    Object? displayName = null,
+    Object? joinedAt = null,
+    Object? avatarUrl = freezed,
+    Object? lastSubmittedAt = freezed,
+  }) {
+    return _then(_Participant(
+      userId: null == userId
+          ? _self.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: null == displayName
+          ? _self.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String,
+      joinedAt: null == joinedAt
+          ? _self.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      avatarUrl: freezed == avatarUrl
+          ? _self.avatarUrl
+          : avatarUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      lastSubmittedAt: freezed == lastSubmittedAt
+          ? _self.lastSubmittedAt
+          : lastSubmittedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+    ));
+  }
 }
 
 // dart format on

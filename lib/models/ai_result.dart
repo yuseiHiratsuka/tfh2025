@@ -12,9 +12,6 @@ abstract class AIResult with _$AIResult {
     /// 認識された単語（ひらがな）
     required String word,
 
-    /// 信頼度（0.0〜1.0）
-    required double confidence,
-
     /// 最初の文字（ひらがな1文字）
     required String firstChar,
 

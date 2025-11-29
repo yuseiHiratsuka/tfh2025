@@ -7,14 +7,14 @@ part of 'validation.dart';
 // **************************************************************************
 
 _Validation _$ValidationFromJson(Map<String, dynamic> json) => _Validation(
-  isValid: json['isValid'] as bool,
-  isAdopted: json['isAdopted'] as bool,
-  isGoalReached: json['isGoalReached'] as bool,
-  validatedAt: const TimestampConverter().fromJson(json['validatedAt']),
-  reasonCode: $enumDecodeNullable(_$ReasonCodeEnumMap, json['reasonCode']),
-  reason: json['reason'] as String?,
-  adoptionOrder: (json['adoptionOrder'] as num?)?.toInt(),
-);
+      isValid: json['isValid'] as bool,
+      isAdopted: json['isAdopted'] as bool,
+      isGoalReached: json['isGoalReached'] as bool,
+      validatedAt: const TimestampConverter().fromJson(json['validatedAt']),
+      reasonCode: $enumDecodeNullable(_$ReasonCodeEnumMap, json['reasonCode']),
+      reason: json['reason'] as String?,
+      adoptionOrder: (json['adoptionOrder'] as num?)?.toInt(),
+    );
 
 Map<String, dynamic> _$ValidationToJson(_Validation instance) =>
     <String, dynamic>{

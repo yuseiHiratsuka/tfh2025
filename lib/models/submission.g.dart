@@ -7,21 +7,21 @@ part of 'submission.dart';
 // **************************************************************************
 
 _Submission _$SubmissionFromJson(Map<String, dynamic> json) => _Submission(
-  id: json['id'] as String,
-  userId: json['userId'] as String,
-  userName: json['userName'] as String,
-  createdAt: const TimestampConverter().fromJson(json['createdAt']),
-  sequenceNumber: (json['sequenceNumber'] as num).toInt(),
-  imageUrl: json['imageUrl'] as String,
-  storagePath: json['storagePath'] as String,
-  status: $enumDecode(_$SubmissionStatusEnumMap, json['status']),
-  aiResult: json['aiResult'] == null
-      ? null
-      : AIResult.fromJson(json['aiResult'] as Map<String, dynamic>),
-  validation: json['validation'] == null
-      ? null
-      : Validation.fromJson(json['validation'] as Map<String, dynamic>),
-);
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      userName: json['userName'] as String,
+      createdAt: const TimestampConverter().fromJson(json['createdAt']),
+      sequenceNumber: (json['sequenceNumber'] as num).toInt(),
+      imageUrl: json['imageUrl'] as String,
+      storagePath: json['storagePath'] as String,
+      status: $enumDecode(_$SubmissionStatusEnumMap, json['status']),
+      aiResult: json['aiResult'] == null
+          ? null
+          : AIResult.fromJson(json['aiResult'] as Map<String, dynamic>),
+      validation: json['validation'] == null
+          ? null
+          : Validation.fromJson(json['validation'] as Map<String, dynamic>),
+    );
 
 Map<String, dynamic> _$SubmissionToJson(_Submission instance) =>
     <String, dynamic>{
