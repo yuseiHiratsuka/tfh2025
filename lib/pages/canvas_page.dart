@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -204,6 +204,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   }
 
   Future<void> _submitDrawing() async {
+    HapticFeedback.heavyImpact();
     if (_isSubmitting) return;
 
     final roomId = widget.roomId;
