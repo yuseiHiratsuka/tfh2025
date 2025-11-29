@@ -151,6 +151,9 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
     if (json == null) {
       throw ArgumentError('Timestamp cannot be null');
     }
+    if (json is DateTime) {
+      return json;
+    }
     if (json is Timestamp) {
       return json.toDate();
     }
@@ -177,6 +180,9 @@ class NullableTimestampConverter implements JsonConverter<DateTime?, dynamic> {
   DateTime? fromJson(dynamic json) {
     if (json == null) {
       return null;
+    }
+    if (json is DateTime) {
+      return json;
     }
     if (json is Timestamp) {
       return json.toDate();
