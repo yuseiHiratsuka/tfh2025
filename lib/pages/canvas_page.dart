@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
+import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
@@ -29,9 +30,6 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   int _secondsLeft = _initialSeconds;
   late final PainterController _controller;
   bool _isSubmitting = false;
-  static const _goalTopic = 'きつねうどん';
-  static const _currentTopic = 'ミャクミャク';
-  static const _previousDrawing = 'ミャクミャク';
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -188,13 +186,12 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       final size = _getCanvasSize();
       final bytes = await _captureBytes(size);
       final displayName = await _resolveDisplayName(roomId);
-      final submissionId = await ref
-          .read(submissionRepositoryProvider)
-          .submitImageBytes(
-            roomId: roomId,
-            displayName: displayName,
-            rawBytes: bytes,
-          );
+      final submissionId =
+          await ref.read(submissionRepositoryProvider).submitImageBytes(
+                roomId: roomId,
+                displayName: displayName,
+                rawBytes: bytes,
+              );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -216,6 +213,29 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final roomId = widget.roomId;
+    if (roomId == null || roomId.isEmpty) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFBE2BBF), Color(0xFF2CB2E5)],
+            ),
+          ),
+          child: const Center(
+            child: Text(
+              'ルームIDが指定されていません',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final roomAsync = ref.watch(roomStreamProvider(roomId));
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -226,137 +246,165 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
           ),
         ),
         child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            children: [
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Expanded(
-                    child: _InfoChip(
-                      label: 'ゴールのお題',
-                      value: _goalTopic,
-                    ),
+          child: roomAsync.when(
+            data: (room) {
+              if (room == null) {
+                return const Center(
+                  child: Text(
+                    'ルームが見つかりません',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: _InfoChip(
-                        label: '制限時間',
-                        value: 'あと$_secondsLeft秒',
-                        leading: const CircleAvatar(
-                          radius: 16,
-                          backgroundImage:
-                              AssetImage('assets/images/robot.png'),
+                );
+              }
+
+              final goalTopic = room.goalCharacter;
+              final currentTopic = room.currentCharacter;
+              final previousDrawing = room.usedWords.isEmpty
+                  ? 'スタート'
+                  : room.usedWords.last;
+
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                children: [
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _InfoChip(
+                          label: 'ゴールのお題',
+                          value: goalTopic,
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _InfoChip(
+                            label: '制限時間',
+                            value: 'あと$_secondsLeft秒',
+                            leading: const CircleAvatar(
+                              radius: 16,
+                              backgroundImage:
+                                  AssetImage('assets/images/robot.png'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '現在のお題',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  _TopicCard(
+                    value: currentTopic,
+                    previousDrawing: previousDrawing,
+                  ),
+                  const SizedBox(height: 12),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final controls = _PainterControls(
+                        controller: _controller,
+                        palette: _palette,
+                        onModeChanged: _setMode,
+                        onColorPicked: _setColor,
+                        onStrokeChanged: _setStroke,
+                      );
+                      final clearButton = OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: _onClearCanvas,
+                        child: const Text('キャンバスをクリア'),
+                      );
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          clearButton,
+                          Expanded(child: controls),
+                        ],
+                      );
+                    },
+                  ),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final canvasWidth = math.min(constraints.maxWidth, 520.0);
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          width: canvasWidth,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(22),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFF2E207A),
+                                  width: 6,
+                                ),
+                              ),
+                              child: AspectRatio(
+                                aspectRatio: 1,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: FlutterPainter(controller: _controller),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitDrawing,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('けってい！'),
                   ),
                 ],
+              );
+            },
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+            error: (error, stack) => Center(
+              child: Text(
+                'エラー: $error',
+                style: const TextStyle(color: Colors.white),
               ),
-              const SizedBox(height: 20),
-              Text(
-                '現在のお題',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              const _TopicCard(
-                value: _currentTopic,
-                previousDrawing: _previousDrawing,
-              ),
-              const SizedBox(height: 12),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final controls = _PainterControls(
-                    controller: _controller,
-                    palette: _palette,
-                    onModeChanged: _setMode,
-                    onColorPicked: _setColor,
-                    onStrokeChanged: _setStroke,
-                  );
-                  final clearButton = OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    onPressed: _onClearCanvas,
-                    child: const Text('キャンバスをクリア'),
-                  );
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      clearButton,
-                      Expanded(child: controls),
-                    ],
-                  );
-                },
-              ),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final canvasWidth = math.min(constraints.maxWidth, 520.0);
-                  return Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: canvasWidth,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(8),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFF2E207A),
-                              width: 6,
-                            ),
-                          ),
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: FlutterPainter(controller: _controller),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitDrawing,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('けってい！'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
