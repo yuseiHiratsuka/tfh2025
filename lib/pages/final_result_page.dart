@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tfh2025/models/participant.dart';
@@ -9,7 +10,7 @@ import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/theme/app_theme.dart';
 
-class FinalResultPage extends ConsumerWidget {
+class FinalResultPage extends HookConsumerWidget {
   const FinalResultPage({
     required this.roomId,
     super.key,
@@ -23,6 +24,7 @@ class FinalResultPage extends ConsumerWidget {
     final submissionsAsync =
         ref.watch(adoptedSubmissionsStreamProvider(roomId));
     final participantsAsync = ref.watch(participantsStreamProvider(roomId));
+    final scrollController = useScrollController();
 
     return Scaffold(
       body: roomAsync.when(
@@ -45,6 +47,7 @@ class FinalResultPage extends ConsumerWidget {
                   ),
                 ),
                 child: CustomScrollView(
+                  controller: scrollController,
                   slivers: [
                     _FinalResultSliverAppBar(room: room),
                     submissionsAsync.when(
@@ -55,6 +58,7 @@ class FinalResultPage extends ConsumerWidget {
                               room: room,
                               submissions: submissions,
                               participants: participants,
+                              scrollController: scrollController,
                             );
                           },
                           loading: () => const SliverFillRemaining(
@@ -231,38 +235,114 @@ class _FinalResultSliverAppBar extends StatelessWidget {
   }
 }
 
-class _ResultTimelineSlivers extends StatelessWidget {
+class _ResultTimelineSlivers extends HookConsumerWidget {
   const _ResultTimelineSlivers({
     required this.room,
     required this.submissions,
     required this.participants,
+    required this.scrollController,
   });
 
   final Room room;
   final List<Submission> submissions;
   final List<Participant> participants;
+  final ScrollController scrollController;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final visibleItemCount = useState(0);
+    final animationKey = useState(0);
+
+    // 0.8秒ごとに表示するアイテム数を増やす
+    useEffect(() {
+      // アイテムの総数を計算（AIイントロ + 各サブミッションの2要素）
+      final totalItems = 1 + submissions.length * 2;
+
+      if (visibleItemCount.value >= totalItems) {
+        return null;
+      }
+
+      final timer = Future.delayed(const Duration(milliseconds: 800), () {
+        if (visibleItemCount.value < totalItems) {
+          visibleItemCount.value++;
+          animationKey.value++;
+
+          // 自動スクロール（少し遅らせて実行）
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(const Duration(milliseconds: 300), () {
+              if (scrollController.hasClients) {
+                final position = scrollController.position;
+                // 新しい要素が表示されたら下にスクロール
+                final targetPosition = position.pixels + 350;
+                final maxScroll = position.maxScrollExtent;
+
+                scrollController.animateTo(
+                  targetPosition > maxScroll ? maxScroll : targetPosition,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+          });
+        }
+      });
+
+      return () => timer.ignore();
+    }, [animationKey.value],);
+
+    // 初期表示をトリガー
+    useEffect(() {
+      Future.delayed(const Duration(milliseconds: 800), () {
+        visibleItemCount.value = 1;
+        animationKey.value = 1;
+      });
+      return null;
+    }, const [],);
+
+    final visibleElements = <Widget>[];
+    var itemIndex = 0;
+
+    // AIイントロ
+    if (visibleItemCount.value > itemIndex) {
+      visibleElements.add(_AIIntroBubble(room: room));
+      itemIndex++;
+    }
+
+    // 各サブミッション
+    for (final submission in submissions) {
+      // 間隔
+      if (visibleItemCount.value > itemIndex) {
+        visibleElements.add(const SizedBox(height: 32));
+      } else {
+        break;
+      }
+      itemIndex++;
+
+      // 参加者の画像
+      if (visibleItemCount.value > itemIndex) {
+        final participant = participants.firstWhere(
+          (p) => p.userId == submission.userId,
+          orElse: () => Participant.initial(
+            userId: 'unknown',
+            displayName: 'Unknown',
+          ),
+        );
+        visibleElements.add(
+          _SubmissionThread(
+            submission: submission,
+            participant: participant,
+          ),
+        );
+      } else {
+        break;
+      }
+      itemIndex++;
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
       sliver: SliverList(
-        delegate: SliverChildListDelegate([
-          _AIIntroBubble(room: room),
-          for (final submission in submissions) ...[
-            const SizedBox(height: 32),
-            _SubmissionThread(
-              submission: submission,
-              participant: participants.firstWhere(
-                (p) => p.userId == submission.userId,
-                orElse: () => Participant.initial(
-                  userId: 'unknown',
-                  displayName: 'Unknown',
-                ),
-              ),
-            ),
-          ],
-        ]),
+        delegate: SliverChildListDelegate(visibleElements),
       ),
     );
   }
