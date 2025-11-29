@@ -20,6 +20,9 @@ dependencies:
   flutter_hooks:
   riverpod_annotation: ^3.0.3
   freezed_annotation: ^3.0.0
+  characters: ^1.3.0
+  json_annotation: ^4.9.0
+  freezed: ^3.2.3
   go_router: ^17.0.0
 
 dev_dependencies:
@@ -31,7 +34,6 @@ dev_dependencies:
   custom_lint:
   riverpod_generator: ^3.0.3
   riverpod_lint: ^3.0.3
-  freezed: ^3.2.3
   json_serializable: ^6.8.0
 
 flutter:
