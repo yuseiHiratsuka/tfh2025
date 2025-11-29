@@ -178,7 +178,7 @@ export const validateAndAdoptSubmission = functions
         }
 
         const { word, firstChar, lastChar } = after.aiResult;
-        const { participantId, sequenceNumber } = after;
+        const { userId, sequenceNumber } = after;
 
         try {
             // トランザクション処理
@@ -259,7 +259,7 @@ export const validateAndAdoptSubmission = functions
                 transaction.update(roomRef, roomUpdate);
 
                 // 7. participant更新
-                const participantRef = db.doc(`rooms/${roomId}/participants/${participantId}`);
+                const participantRef = db.doc(`rooms/${roomId}/participants/${userId}`);
                 transaction.update(participantRef, {
                     lastSubmittedAt: admin.firestore.Timestamp.now(),
                 });
