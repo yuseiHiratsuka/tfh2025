@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -96,6 +97,132 @@ void main() {
           ),
         ),
       );
+    });
+  });
+
+  group('ParticipantRepository.setReadyStatus', () {
+    const roomId = 'room-id';
+    const userId = 'user-id';
+
+    late FakeFirebaseFirestore firestore;
+    late MockFirebaseAuth auth;
+    late ParticipantRepository repository;
+
+    Future<void> _createParticipant({required bool isReady}) {
+      return firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('participants')
+          .doc(userId)
+          .set({
+        'userId': userId,
+        'displayName': 'user',
+        'joinedAt': DateTime(2024, 1, 1),
+        'isReady': isReady,
+        'isMaster': false,
+      });
+    }
+
+    setUp(() {
+      firestore = FakeFirebaseFirestore();
+      auth = MockFirebaseAuth(
+        mockUser: MockUser(uid: userId),
+        signedIn: true,
+      );
+      repository = ParticipantRepository(
+        firestore: firestore,
+        authRepository: AuthRepository(firebaseAuth: auth),
+      );
+    });
+
+    test('isReadyのトグルでreadyCountが±1される', () async {
+      await firestore.collection('rooms').doc(roomId).set({
+        'readyCount': 0,
+        'totalParticipants': 2,
+        'status': 'waiting',
+      });
+      await _createParticipant(isReady: false);
+
+      await repository.setReadyStatus(roomId: roomId, isReady: true);
+
+      final afterReadyRoom =
+          await firestore.collection('rooms').doc(roomId).get();
+      final afterReadyParticipant = await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('participants')
+          .doc(userId)
+          .get();
+
+      expect(afterReadyRoom.data()?['readyCount'], 1);
+      expect(afterReadyParticipant.data()?['isReady'], isTrue);
+
+      await repository.setReadyStatus(roomId: roomId, isReady: false);
+
+      final afterCancelRoom =
+          await firestore.collection('rooms').doc(roomId).get();
+      final afterCancelParticipant = await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('participants')
+          .doc(userId)
+          .get();
+
+      expect(afterCancelRoom.data()?['readyCount'], 0);
+      expect(afterCancelParticipant.data()?['isReady'], isFalse);
+    });
+
+    test('同じ状態で呼ぶとreadyCountや更新時刻を変更せずに早期リターンする', () async {
+      final initialUpdatedAt = DateTime(2024, 2, 1);
+      await firestore.collection('rooms').doc(roomId).set({
+        'readyCount': 1,
+        'totalParticipants': 2,
+        'status': 'waiting',
+        'updatedAt': initialUpdatedAt,
+      });
+      await _createParticipant(isReady: true);
+
+      await repository.setReadyStatus(roomId: roomId, isReady: true);
+
+      final room = await firestore.collection('rooms').doc(roomId).get();
+      final participant = await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('participants')
+          .doc(userId)
+          .get();
+
+      expect(room.data()?['readyCount'], 1);
+      final updatedAtValue = room.data()?['updatedAt'];
+      final updatedAt = updatedAtValue is Timestamp
+          ? updatedAtValue.toDate()
+          : updatedAtValue as DateTime?;
+      expect(updatedAt, initialUpdatedAt);
+      expect(participant.data()?['isReady'], isTrue);
+    });
+
+    test('presenting中に全員準備完了するとplayingに遷移する', () async {
+      await firestore.collection('rooms').doc(roomId).set({
+        'readyCount': 1,
+        'totalParticipants': 2,
+        'status': 'presenting',
+      });
+      await _createParticipant(isReady: false);
+
+      await repository.setReadyStatus(roomId: roomId, isReady: true);
+
+      final room = await firestore.collection('rooms').doc(roomId).get();
+      final participant = await firestore
+          .collection('rooms')
+          .doc(roomId)
+          .collection('participants')
+          .doc(userId)
+          .get();
+
+      expect(room.data()?['status'], 'playing');
+      expect(room.data()?['readyCount'], 2);
+      expect(room.data()?['startedAt'], isNotNull);
+      expect(participant.data()?['isReady'], isTrue);
     });
   });
 }
