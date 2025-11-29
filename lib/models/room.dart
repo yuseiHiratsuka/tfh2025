@@ -80,17 +80,20 @@ abstract class Room with _$Room {
     /// 総参加者数
     required int totalParticipants,
 
+    /// 準備完了している参加者数
+    @JsonKey(defaultValue: 0) required int readyCount,
+
     /// 失敗理由
     FailureReason? failureReason,
 
     /// ゲーム開始日時
-    @TimestampConverter() DateTime? startedAt,
+    @NullableTimestampConverter() DateTime? startedAt,
 
     /// ゴール到達者のuserId
     String? goalReachedBy,
 
     /// 終了日時
-    @TimestampConverter() DateTime? finishedAt,
+    @NullableTimestampConverter() DateTime? finishedAt,
 
     /// ゲームスコア
     int? score,
@@ -131,6 +134,7 @@ abstract class Room with _$Room {
       isGoalReached: false,
       totalSubmissions: 0,
       totalParticipants: 0,
+      readyCount: 0,
     );
   }
 }
@@ -158,6 +162,36 @@ class TimestampConverter implements JsonConverter<DateTime, dynamic> {
 
   @override
   dynamic toJson(DateTime dateTime) {
+    return Timestamp.fromDate(dateTime);
+  }
+}
+
+/// Timestamp型とDateTime?型の変換を行うコンバーター（nullable対応）
+class NullableTimestampConverter implements JsonConverter<DateTime?, dynamic> {
+  const NullableTimestampConverter();
+
+  @override
+  DateTime? fromJson(dynamic json) {
+    if (json == null) {
+      return null;
+    }
+    if (json is Timestamp) {
+      return json.toDate();
+    }
+    if (json is int) {
+      return DateTime.fromMillisecondsSinceEpoch(json);
+    }
+    if (json is String) {
+      return DateTime.parse(json);
+    }
+    throw ArgumentError('Invalid timestamp format: $json');
+  }
+
+  @override
+  dynamic toJson(DateTime? dateTime) {
+    if (dateTime == null) {
+      return null;
+    }
     return Timestamp.fromDate(dateTime);
   }
 }

@@ -61,18 +61,22 @@ mixin _$Room {
   /// 総参加者数
   int get totalParticipants;
 
+  /// 準備完了している参加者数
+  @JsonKey(defaultValue: 0)
+  int get readyCount;
+
   /// 失敗理由
   FailureReason? get failureReason;
 
   /// ゲーム開始日時
-  @TimestampConverter()
+  @NullableTimestampConverter()
   DateTime? get startedAt;
 
   /// ゴール到達者のuserId
   String? get goalReachedBy;
 
   /// 終了日時
-  @TimestampConverter()
+  @NullableTimestampConverter()
   DateTime? get finishedAt;
 
   /// ゲームスコア
@@ -126,6 +130,8 @@ mixin _$Room {
                 other.totalSubmissions == totalSubmissions) &&
             (identical(other.totalParticipants, totalParticipants) ||
                 other.totalParticipants == totalParticipants) &&
+            (identical(other.readyCount, readyCount) ||
+                other.readyCount == readyCount) &&
             (identical(other.failureReason, failureReason) ||
                 other.failureReason == failureReason) &&
             (identical(other.startedAt, startedAt) ||
@@ -160,6 +166,7 @@ mixin _$Room {
         isGoalReached,
         totalSubmissions,
         totalParticipants,
+        readyCount,
         failureReason,
         startedAt,
         goalReachedBy,
@@ -171,7 +178,7 @@ mixin _$Room {
 
   @override
   String toString() {
-    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
   }
 }
 
@@ -196,10 +203,11 @@ abstract mixin class $RoomCopyWith<$Res> {
       bool isGoalReached,
       int totalSubmissions,
       int totalParticipants,
+      @JsonKey(defaultValue: 0) int readyCount,
       FailureReason? failureReason,
-      @TimestampConverter() DateTime? startedAt,
+      @NullableTimestampConverter() DateTime? startedAt,
       String? goalReachedBy,
-      @TimestampConverter() DateTime? finishedAt,
+      @NullableTimestampConverter() DateTime? finishedAt,
       int? score,
       int? timeBonus,
       int? chainBonus});
@@ -232,6 +240,7 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
     Object? isGoalReached = null,
     Object? totalSubmissions = null,
     Object? totalParticipants = null,
+    Object? readyCount = null,
     Object? failureReason = freezed,
     Object? startedAt = freezed,
     Object? goalReachedBy = freezed,
@@ -300,6 +309,10 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
       totalParticipants: null == totalParticipants
           ? _self.totalParticipants
           : totalParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      readyCount: null == readyCount
+          ? _self.readyCount
+          : readyCount // ignore: cast_nullable_to_non_nullable
               as int,
       failureReason: freezed == failureReason
           ? _self.failureReason
@@ -442,10 +455,11 @@ extension RoomPatterns on Room {
             bool isGoalReached,
             int totalSubmissions,
             int totalParticipants,
+            @JsonKey(defaultValue: 0) int readyCount,
             FailureReason? failureReason,
-            @TimestampConverter() DateTime? startedAt,
+            @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
-            @TimestampConverter() DateTime? finishedAt,
+            @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
             int? chainBonus)?
@@ -471,6 +485,7 @@ extension RoomPatterns on Room {
             _that.isGoalReached,
             _that.totalSubmissions,
             _that.totalParticipants,
+            _that.readyCount,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
@@ -514,10 +529,11 @@ extension RoomPatterns on Room {
             bool isGoalReached,
             int totalSubmissions,
             int totalParticipants,
+            @JsonKey(defaultValue: 0) int readyCount,
             FailureReason? failureReason,
-            @TimestampConverter() DateTime? startedAt,
+            @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
-            @TimestampConverter() DateTime? finishedAt,
+            @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
             int? chainBonus)
@@ -542,6 +558,7 @@ extension RoomPatterns on Room {
             _that.isGoalReached,
             _that.totalSubmissions,
             _that.totalParticipants,
+            _that.readyCount,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
@@ -584,10 +601,11 @@ extension RoomPatterns on Room {
             bool isGoalReached,
             int totalSubmissions,
             int totalParticipants,
+            @JsonKey(defaultValue: 0) int readyCount,
             FailureReason? failureReason,
-            @TimestampConverter() DateTime? startedAt,
+            @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
-            @TimestampConverter() DateTime? finishedAt,
+            @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
             int? chainBonus)?
@@ -612,6 +630,7 @@ extension RoomPatterns on Room {
             _that.isGoalReached,
             _that.totalSubmissions,
             _that.totalParticipants,
+            _that.readyCount,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
@@ -644,10 +663,11 @@ class _Room extends Room {
       required this.isGoalReached,
       required this.totalSubmissions,
       required this.totalParticipants,
+      @JsonKey(defaultValue: 0) required this.readyCount,
       this.failureReason,
-      @TimestampConverter() this.startedAt,
+      @NullableTimestampConverter() this.startedAt,
       this.goalReachedBy,
-      @TimestampConverter() this.finishedAt,
+      @NullableTimestampConverter() this.finishedAt,
       this.score,
       this.timeBonus,
       this.chainBonus})
@@ -724,13 +744,18 @@ class _Room extends Room {
   @override
   final int totalParticipants;
 
+  /// 準備完了している参加者数
+  @override
+  @JsonKey(defaultValue: 0)
+  final int readyCount;
+
   /// 失敗理由
   @override
   final FailureReason? failureReason;
 
   /// ゲーム開始日時
   @override
-  @TimestampConverter()
+  @NullableTimestampConverter()
   final DateTime? startedAt;
 
   /// ゴール到達者のuserId
@@ -739,7 +764,7 @@ class _Room extends Room {
 
   /// 終了日時
   @override
-  @TimestampConverter()
+  @NullableTimestampConverter()
   final DateTime? finishedAt;
 
   /// ゲームスコア
@@ -802,6 +827,8 @@ class _Room extends Room {
                 other.totalSubmissions == totalSubmissions) &&
             (identical(other.totalParticipants, totalParticipants) ||
                 other.totalParticipants == totalParticipants) &&
+            (identical(other.readyCount, readyCount) ||
+                other.readyCount == readyCount) &&
             (identical(other.failureReason, failureReason) ||
                 other.failureReason == failureReason) &&
             (identical(other.startedAt, startedAt) ||
@@ -836,6 +863,7 @@ class _Room extends Room {
         isGoalReached,
         totalSubmissions,
         totalParticipants,
+        readyCount,
         failureReason,
         startedAt,
         goalReachedBy,
@@ -847,7 +875,7 @@ class _Room extends Room {
 
   @override
   String toString() {
-    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
   }
 }
 
@@ -873,10 +901,11 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
       bool isGoalReached,
       int totalSubmissions,
       int totalParticipants,
+      @JsonKey(defaultValue: 0) int readyCount,
       FailureReason? failureReason,
-      @TimestampConverter() DateTime? startedAt,
+      @NullableTimestampConverter() DateTime? startedAt,
       String? goalReachedBy,
-      @TimestampConverter() DateTime? finishedAt,
+      @NullableTimestampConverter() DateTime? finishedAt,
       int? score,
       int? timeBonus,
       int? chainBonus});
@@ -909,6 +938,7 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
     Object? isGoalReached = null,
     Object? totalSubmissions = null,
     Object? totalParticipants = null,
+    Object? readyCount = null,
     Object? failureReason = freezed,
     Object? startedAt = freezed,
     Object? goalReachedBy = freezed,
@@ -977,6 +1007,10 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
       totalParticipants: null == totalParticipants
           ? _self.totalParticipants
           : totalParticipants // ignore: cast_nullable_to_non_nullable
+              as int,
+      readyCount: null == readyCount
+          ? _self.readyCount
+          : readyCount // ignore: cast_nullable_to_non_nullable
               as int,
       failureReason: freezed == failureReason
           ? _self.failureReason
