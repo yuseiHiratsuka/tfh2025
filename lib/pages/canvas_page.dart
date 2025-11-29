@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
+import 'package:rive/rive.dart';
 import 'package:tfh2025/models/room.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
@@ -34,6 +35,8 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   bool _isSubmitting = false;
   Room? _lastRoom;
   bool _isCanvasInteracting = false;
+  File? _buttonRiveFile;
+  RiveWidgetController? _buttonController;
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -55,12 +58,26 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       background: const ColorBackgroundDrawable(color: Colors.white),
     );
     _startCountdown();
+    _loadButtonRiveFile();
+  }
+
+  Future<void> _loadButtonRiveFile() async {
+    _buttonRiveFile = await File.asset(
+      'assets/rive/button.riv',
+      riveFactory: Factory.rive,
+    );
+    if (_buttonRiveFile != null) {
+      _buttonController = RiveWidgetController(_buttonRiveFile!);
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
     _controller.dispose();
+    _buttonController?.dispose();
+    _buttonRiveFile?.dispose();
     super.dispose();
   }
 
@@ -187,6 +204,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   }
 
   Future<void> _submitDrawing() async {
+    HapticFeedback.heavyImpact();
     if (_isSubmitting) return;
 
     final roomId = widget.roomId;
@@ -461,16 +479,23 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
             );
           },
         ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _submitDrawing,
-          child: _isSubmitting
+        const SizedBox(height: 26),
+        GestureDetector(
+          onTap: _isSubmitting ? null : _submitDrawing,
+          child: _buttonController == null
               ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  width: double.infinity,
+                  height: 460,
+                  child: Center(child: CircularProgressIndicator()),
                 )
-              : const Text('けってい！'),
+              : SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: RiveWidget(
+                    controller: _buttonController!,
+                    fit: Fit.cover,
+                  ),
+                ),
         ),
       ],
     );
