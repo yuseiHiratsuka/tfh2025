@@ -8,6 +8,8 @@ on:
 
 jobs:
   build-and-distribute:
+    # Temporarily disabled
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     steps:
