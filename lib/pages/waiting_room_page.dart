@@ -154,7 +154,7 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
       appBar: AppBar(
         title: const Text('待機ルーム'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,97 +190,186 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
               ),
             ),
             const Divider(height: 32),
+            // お題情報の表示
+            roomAsync.when(
+              data: (room) {
+                final data = room.data();
+                final startCharacter = data?['startCharacter'] as String?;
+                final goalCharacter = data?['goalCharacter'] as String?;
+
+                if (startCharacter == null || goalCharacter == null) {
+                  return const SizedBox.shrink();
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'お題情報',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'スタート',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    startCharacter,
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.arrow_forward, size: 32),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  const Text(
+                                    'ゴール',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    goalCharacter,
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+              error: (_, __) => const SizedBox.shrink(),
+              loading: () => const SizedBox.shrink(),
+            ),
             Text(
               '参加者一覧',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Expanded(
-              child: participantsAsync.when(
-                data: (participants) {
-                  if (roomId.isEmpty) {
-                    return const Center(child: Text('ルームIDを入力してください'));
-                  }
-                  if (participants.isEmpty) {
-                    return const Center(child: Text('参加者はまだいません'));
-                  }
-                  Participant? selfParticipant;
-                  for (final participant in participants) {
-                    if (participant.userId == currentUserId) {
-                      selfParticipant = participant;
-                      break;
-                    }
-                  }
-                  final readyCount =
-                      participants.where((p) => p.isReady).length;
-                  final isSelfReady = selfParticipant?.isReady ?? false;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('準備状況: $readyCount / ${participants.length}'),
-                          const SizedBox(width: 12),
-                          roomAsync.when(
-                            data: (room) {
-                              final data = room.data();
-                              final maxPlayers = data?['maxPlayers'];
-                              if (maxPlayers is int && maxPlayers > 0) {
-                                return Text('(定員 $maxPlayers 人)');
-                              }
-                              return const SizedBox.shrink();
-                            },
-                            error: (_, __) => const SizedBox.shrink(),
-                            loading: () => const SizedBox.shrink(),
-                          ),
-                          const Spacer(),
-                          ElevatedButton.icon(
-                            onPressed: currentUserId == null
-                                ? null
-                                : () => _toggleReady(
-                                      roomId: roomId,
-                                      nextReady: !isSelfReady,
-                                    ),
-                            icon: Icon(
-                              isSelfReady
-                                  ? Icons.check_circle
-                                  : Icons.radio_button_unchecked,
-                            ),
-                            label: Text(isSelfReady ? '準備解除' : '準備完了する'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: participants.length,
-                          separatorBuilder: (_, __) => const Divider(),
-                          itemBuilder: (context, index) {
-                            final participant = participants[index];
-                            return ListTile(
-                              leading: Icon(
-                                participant.isReady
-                                    ? Icons.check_circle
-                                    : Icons.person,
-                                color:
-                                    participant.isReady ? Colors.green : null,
-                              ),
-                              title: Text(participant.displayName),
-                              subtitle: Text('参加: ${participant.joinedAt}'),
-                              trailing: Text(participant.userId),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+            participantsAsync.when(
+              data: (participants) {
+                if (roomId.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: Text('ルームIDを入力してください')),
                   );
-                },
-                error: (error, _) =>
-                    Center(child: Text('参加者取得に失敗しました: $error')),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                }
+                if (participants.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: Text('参加者はまだいません')),
+                  );
+                }
+                Participant? selfParticipant;
+                for (final participant in participants) {
+                  if (participant.userId == currentUserId) {
+                    selfParticipant = participant;
+                    break;
+                  }
+                }
+                final readyCount = participants.where((p) => p.isReady).length;
+                final isSelfReady = selfParticipant?.isReady ?? false;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text('準備状況: $readyCount / ${participants.length}'),
+                        const SizedBox(width: 12),
+                        roomAsync.when(
+                          data: (room) {
+                            final data = room.data();
+                            final maxPlayers = data?['maxPlayers'];
+                            if (maxPlayers is int && maxPlayers > 0) {
+                              return Text('(定員 $maxPlayers 人)');
+                            }
+                            return const SizedBox.shrink();
+                          },
+                          error: (_, __) => const SizedBox.shrink(),
+                          loading: () => const SizedBox.shrink(),
+                        ),
+                        const Spacer(),
+                        ElevatedButton.icon(
+                          onPressed: currentUserId == null
+                              ? null
+                              : () => _toggleReady(
+                                    roomId: roomId,
+                                    nextReady: !isSelfReady,
+                                  ),
+                          icon: Icon(
+                            isSelfReady
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
+                          ),
+                          label: Text(isSelfReady ? '準備解除' : '準備完了する'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: participants.length,
+                      separatorBuilder: (_, __) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final participant = participants[index];
+                        return ListTile(
+                          leading: Icon(
+                            participant.isReady
+                                ? Icons.check_circle
+                                : Icons.person,
+                            color: participant.isReady ? Colors.green : null,
+                          ),
+                          title: Text(participant.displayName),
+                          subtitle: Text('参加: ${participant.joinedAt}'),
+                          trailing: Text(participant.userId),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+              error: (error, _) => Center(child: Text('参加者取得に失敗しました: $error')),
+              loading: () => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
             const SizedBox(height: 12),
