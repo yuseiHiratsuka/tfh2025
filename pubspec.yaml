@@ -42,3 +42,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: NicomojiPlus
+      fonts:
+        - asset: assets/fonts/nicomoji-plus_v2-5.ttf

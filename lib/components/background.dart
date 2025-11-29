@@ -19,7 +19,12 @@ class Background extends StatelessWidget {
           ],
         ),
       ),
-      child: SafeArea(child: child),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 24.0),
+          child: child,
+        ),
+      ),
     );
   }
 }

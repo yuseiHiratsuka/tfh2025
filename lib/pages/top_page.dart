@@ -11,6 +11,7 @@ class TopPage extends StatelessWidget {
       body: Background(
         child: Center(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Expanded(
@@ -19,13 +20,14 @@ class TopPage extends StatelessWidget {
                   children: [
                     Text(
                       'みゃくラック',
-                      style: TextStyle(fontSize: 64),
+                      style: TextStyle(fontSize: 64, color: Colors.white),
                     ),
                     SizedBox(height: 40),
                     Text(
                       'スタート→ゴールを、\nAI判定つき絵しりとりでつなごう！',
                       style: TextStyle(
                         fontSize: 20,
+                        color: Colors.white,
                       ),
                       textAlign: TextAlign.center,
                     ),

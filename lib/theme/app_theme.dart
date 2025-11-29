@@ -11,6 +11,7 @@ class AppColors {
   static const Color error = Color(0xFFDC2626);
   static const Color onSurfaceLight = Color(0xFF1F2937); // ライトモード用（暗いグレー）
   static const Color onSurfaceDark = Colors.white; // ダークモード用（白）
+  static const Color shadow = Color(0xFF301A6B);
   static const Color backgroundStart = Color(0xFFCF00A9);
   static const Color backgroundEnd = Color(0xFF00BCD9);
 }
@@ -24,6 +25,7 @@ class AppTheme {
     surface: AppColors.surfaceLight,
     error: AppColors.error,
     onSurface: AppColors.onSurfaceLight,
+    shadow: AppColors.shadow,
   );
 
   static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
@@ -34,6 +36,7 @@ class AppTheme {
     surface: AppColors.surfaceDark,
     error: AppColors.error,
     onSurface: AppColors.onSurfaceDark,
+    shadow: AppColors.shadow,
   );
 
   static final ThemeData light = _theme(lightColorScheme);
@@ -56,6 +59,7 @@ class AppTheme {
       textTheme: textTheme.apply(
         displayColor: scheme.onSurface,
         bodyColor: scheme.onSurface,
+        fontFamily: 'NicomojiPlus',
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,
@@ -64,11 +68,16 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: scheme.primary,
-          foregroundColor: scheme.onPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: const StadiumBorder(),
-          textStyle: const TextStyle(fontWeight: FontWeight.bold),
+          backgroundColor: scheme.surface,
+          foregroundColor: scheme.shadow,
+          padding: const EdgeInsets.all(20),
+          shape: StadiumBorder(
+            side: BorderSide(width: 3, color: scheme.shadow),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 24,
+            fontFamily: 'NicomojiPlus',
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

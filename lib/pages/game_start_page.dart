@@ -10,6 +10,8 @@ class GameStartPage extends StatelessWidget {
 
   final String roomId;
 
+  final color = const Color(0xFFE0F7FA);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
