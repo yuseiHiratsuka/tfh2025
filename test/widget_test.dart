@@ -42,7 +42,7 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     // モックのTestRepositoryを使用してFirebaseへの依存を回避
-    await tester.pumpWidget(MyApp(testRepository: MockTestRepository()));
+    await tester.pumpWidget(App(testRepository: MockTestRepository()));
 
     // 必ず通るテスト（検証なし）
   });
