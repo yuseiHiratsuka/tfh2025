@@ -48,16 +48,19 @@ class _TopPageState extends State<TopPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Expanded(
+              Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'みゃくラック',
-                      style: TextStyle(fontSize: 64, color: Colors.white),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Image.asset(
+                        'assets/image/title.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    SizedBox(height: 40),
-                    Text(
+                    const SizedBox(height: 40),
+                    const Text(
                       'スタート→ゴールを、\nAI判定つき絵しりとりでつなごう！',
                       style: TextStyle(
                         fontSize: 20,
