@@ -38,8 +38,8 @@ class HomePage extends HookConsumerWidget {
             end: Alignment.bottomRight,
             colors: [
               colorScheme.surface,
-              colorScheme.surface.withOpacity(0.8),
-              colorScheme.primary.withOpacity(0.1),
+              colorScheme.surface.withValues(alpha: 0.8),
+              colorScheme.primary.withValues(alpha: 0.1),
             ],
           ),
         ),
@@ -76,7 +76,9 @@ class HomePage extends HookConsumerWidget {
                             Text(
                               'ゲームを楽しもう',
                               style: textTheme.titleMedium?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.7),
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.7,
+                                ),
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -107,8 +109,8 @@ class HomePage extends HookConsumerWidget {
                                 backgroundColor: colorScheme.primary,
                                 foregroundColor: colorScheme.onPrimary,
                                 elevation: 4,
-                                shadowColor: colorScheme.primary.withOpacity(
-                                  0.4,
+                                shadowColor: colorScheme.primary.withValues(
+                                  alpha: 0.4,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
@@ -205,7 +207,7 @@ class HomePage extends HookConsumerWidget {
                               label: const Text('遊び方'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: colorScheme.onSurface
-                                    .withOpacity(0.7),
+                                    .withValues(alpha: 0.7),
                                 side: BorderSide(
                                   color: colorScheme.outline,
                                   width: 1.5,
@@ -228,7 +230,7 @@ class HomePage extends HookConsumerWidget {
                       child: Text(
                         '© 2025 TFH',
                         style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
