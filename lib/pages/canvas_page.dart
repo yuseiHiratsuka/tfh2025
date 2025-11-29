@@ -167,6 +167,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
         }
       }
     } catch (e) {
+      //todo 削除
       // タイムアウトまたはエラーの場合は仮データで参加登録（モック用）
       final participantRepository = ref.read(participantRepositoryProvider);
       final newParticipant = await participantRepository.joinRoom(
