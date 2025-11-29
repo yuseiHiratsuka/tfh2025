@@ -9,7 +9,21 @@ import 'services/repositories/test_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint('[main] Firebase初期化開始');
+  try {
+    final app = await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint('[main] Firebase初期化成功');
+    debugPrint('[main] Firebase app name: ${app.name}');
+    debugPrint('[main] Firebase projectId: ${app.options.projectId}');
+    debugPrint('[main] Firebase apiKey: ${app.options.apiKey}');
+    debugPrint('[main] Firebase appId: ${app.options.appId}');
+  } catch (e, stackTrace) {
+    debugPrint('[main] Firebase初期化エラー: $e');
+    debugPrint('[main] スタックトレース: $stackTrace');
+    rethrow;
+  }
   runApp(const ProviderScope(child: App()));
 }
 
