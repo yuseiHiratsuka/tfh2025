@@ -14,7 +14,7 @@ class MockDataSeeder {
 
   Future<void> seedMockData(String roomId) async {
     debugPrint('[MockDataSeeder] Seeding data for room: $roomId');
-    
+
     final now = DateTime.now();
     final roomRef = _firestore.collection('rooms').doc(roomId);
 
@@ -23,7 +23,6 @@ class MockDataSeeder {
       id: roomId,
       startCharacter: 'みゃくみゃく',
       goalCharacter: 'きつねうどん',
-      timeLimit: 120,
     ).copyWith(
       status: RoomStatus.success,
       score: 8500,
@@ -41,12 +40,10 @@ class MockDataSeeder {
       Participant.initial(
         userId: 'user1',
         displayName: 'パイナップル',
-        avatarUrl: null,
       ).copyWith(joinedAt: now.subtract(const Duration(minutes: 3))),
       Participant.initial(
         userId: 'user2',
         displayName: 'サル',
-        avatarUrl: null,
       ).copyWith(joinedAt: now.subtract(const Duration(minutes: 3))),
     ];
 
@@ -105,7 +102,7 @@ class MockDataSeeder {
           validatedAt: now.subtract(const Duration(seconds: 58)),
         ),
       ),
-       Submission.initial(
+      Submission.initial(
         id: 'sub3',
         userId: 'user1',
         userName: 'パイナップル',
@@ -167,4 +164,3 @@ final mockDataSeederProvider = Provider<MockDataSeeder>((ref) {
   final firestore = ref.watch(firebaseFirestoreProvider);
   return MockDataSeeder(firestore);
 });
-

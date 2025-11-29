@@ -162,7 +162,7 @@ class _FinalResultSliverAppBar extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.backgroundStart, AppColors.backgroundEnd],
+              colors: [AppColors.primary, AppColors.secondary],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),

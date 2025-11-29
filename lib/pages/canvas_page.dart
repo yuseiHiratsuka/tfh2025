@@ -104,6 +104,7 @@ class _CanvasPageState extends State<CanvasPage> {
     return Uint8List.fromList(img.encodeJpg(converted));
   }
 
+  //ignore: unused_element
   Future<void> _exportImage() async {
     final renderBox =
         _controller.painterKey.currentContext?.findRenderObject() as RenderBox?;
@@ -193,7 +194,6 @@ class _CanvasPageState extends State<CanvasPage> {
               const SizedBox(height: 12),
               LayoutBuilder(
                 builder: (context, constraints) {
-                 
                   final controls = _PainterControls(
                     controller: _controller,
                     palette: _palette,
@@ -238,7 +238,7 @@ class _CanvasPageState extends State<CanvasPage> {
                           borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),

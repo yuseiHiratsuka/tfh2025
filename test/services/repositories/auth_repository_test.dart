@@ -23,8 +23,7 @@ class _FakeFirebaseApp extends MockFirebaseApp {
 }
 
 class _RecordingAuth extends MockFirebaseAuth {
-  _RecordingAuth({bool signedIn = false, MockUser? mockUser})
-      : super(signedIn: signedIn, mockUser: mockUser) {
+  _RecordingAuth({super.signedIn, super.mockUser}) {
     app = _FakeFirebaseApp();
   }
 
@@ -58,8 +57,7 @@ void main() {
       expect(auth.signInCallCount, 0);
     });
 
-    test('並列呼び出しは同じFutureを共有してsignInAnonymouslyが1回だけ呼ばれる',
-        () async {
+    test('並列呼び出しは同じFutureを共有してsignInAnonymouslyが1回だけ呼ばれる', () async {
       final auth = _RecordingAuth();
       final mockUser = MockUser(uid: 'anon-user', isAnonymous: true);
       auth.mockUser = mockUser;
@@ -80,8 +78,7 @@ void main() {
       expect(auth.signInCallCount, 1);
     });
 
-    test('FirebaseAuthException発生後は_signInFutureがクリアされてリトライできる',
-        () async {
+    test('FirebaseAuthException発生後は_signInFutureがクリアされてリトライできる', () async {
       final auth = _RecordingAuth();
       final repository = AuthRepository(firebaseAuth: auth);
       auth.enqueueSignIn(
