@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tfh2025/painter.dart';
 
 class WaitingRoomPage extends StatelessWidget {
   const WaitingRoomPage({super.key});
@@ -16,6 +17,18 @@ class WaitingRoomPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () => context.go('/theme_presentation'),
               child: const Text('お題提示画面へ'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PainterPage(),
+                  ),
+                );
+              },
+              child: const Text('ペインター画面へ'),
             ),
           ],
         ),

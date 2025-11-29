@@ -126,7 +126,7 @@ class _PainterPageState extends State<PainterPage> {
         actions: [
           AnimatedBuilder(
             animation: _controller,
-            builder: (_, _) => IconButton(
+            builder: (_, __) => IconButton(
               tooltip: 'Undo',
               icon: const Icon(Icons.undo),
               onPressed: _controller.canUndo ? _controller.undo : null,
@@ -134,7 +134,7 @@ class _PainterPageState extends State<PainterPage> {
           ),
           AnimatedBuilder(
             animation: _controller,
-            builder: (_, _) => IconButton(
+            builder: (_, __) => IconButton(
               tooltip: 'Redo',
               icon: const Icon(Icons.redo),
               onPressed: _controller.canRedo ? _controller.redo : null,
@@ -202,38 +202,13 @@ class _PainterControls extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return AnimatedBuilder(
       animation: controller,
-      builder: (_, _) {
+      builder: (_, __) {
         final settings = controller.freeStyleSettings;
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  ChoiceChip(
-                    label: const Text('ペン'),
-                    selected: settings.mode == FreeStyleMode.draw,
-                    onSelected: (_) => onModeChanged(FreeStyleMode.draw),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('消しゴム'),
-                    selected: settings.mode == FreeStyleMode.erase,
-                    onSelected: (_) => onModeChanged(FreeStyleMode.erase),
-                  ),
-                  const Spacer(),
-                  Text('太さ', style: textTheme.bodyMedium),
-                  Expanded(
-                    child: Slider(
-                      min: 1,
-                      max: 20,
-                      value: settings.strokeWidth,
-                      onChanged: onStrokeChanged,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 44,
@@ -254,7 +229,7 @@ class _PainterControls extends StatelessWidget {
                       ),
                     );
                   },
-                  separatorBuilder: (_, _) => const SizedBox(width: 10),
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
                   itemCount: palette.length,
                 ),
               ),
