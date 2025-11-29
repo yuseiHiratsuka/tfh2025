@@ -22,6 +22,7 @@ enum SubmissionStatus {
 /// 投稿された絵の情報
 @freezed
 abstract class Submission with _$Submission {
+  @JsonSerializable(explicitToJson: true)
   const factory Submission({
     /// ドキュメントID
     required String id,
