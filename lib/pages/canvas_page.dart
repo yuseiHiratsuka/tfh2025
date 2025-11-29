@@ -4,21 +4,31 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
+import 'package:tfh2025/services/repositories/auth_repository.dart';
+import 'package:tfh2025/services/repositories/participant_repository.dart';
+import 'package:tfh2025/services/repositories/submission_repository.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
-class CanvasPage extends StatefulWidget {
-  const CanvasPage({super.key});
+class CanvasPage extends ConsumerStatefulWidget {
+  const CanvasPage({
+    this.roomId,
+    super.key,
+  });
+
+  final String? roomId;
 
   @override
-  State<CanvasPage> createState() => _CanvasPageState();
+  ConsumerState<CanvasPage> createState() => _CanvasPageState();
 }
 
-class _CanvasPageState extends State<CanvasPage> {
+class _CanvasPageState extends ConsumerState<CanvasPage> {
   Timer? _countdownTimer;
   static const _initialSeconds = 120;
   int _secondsLeft = _initialSeconds;
   late final PainterController _controller;
+  bool _isSubmitting = false;
   static const _goalTopic = 'きつねうどん';
   static const _currentTopic = 'ミャクミャク';
   static const _previousDrawing = 'ミャクミャク';
@@ -87,6 +97,12 @@ class _CanvasPageState extends State<CanvasPage> {
     if (!mounted) return;
   }
 
+  Size _getCanvasSize() {
+    final renderBox =
+        _controller.painterKey.currentContext?.findRenderObject() as RenderBox?;
+    return renderBox?.size ?? const Size(512, 512);
+  }
+
   Future<Uint8List> _captureBytes(Size size) async {
     final image = await _controller.renderImage(size);
     final byteData = await image.toByteData();
@@ -105,9 +121,7 @@ class _CanvasPageState extends State<CanvasPage> {
   }
 
   Future<void> _exportImage() async {
-    final renderBox =
-        _controller.painterKey.currentContext?.findRenderObject() as RenderBox?;
-    final size = renderBox?.size ?? const Size(512, 512);
+    final size = _getCanvasSize();
     try {
       final bytes = await _captureBytes(size);
       if (!mounted) return;
@@ -132,6 +146,70 @@ class _CanvasPageState extends State<CanvasPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('画像化に失敗しました: $e')),
       );
+    }
+  }
+
+  Future<String> _resolveDisplayName(String roomId) async {
+    final authRepository = ref.read(authRepositoryProvider);
+    final user = await authRepository.signInAnonymouslyIfNeeded();
+    final participants =
+        await ref.read(participantsStreamProvider(roomId).future);
+
+    for (final participant in participants) {
+      if (participant.userId == user.uid) {
+        return participant.displayName;
+      }
+    }
+
+    throw StateError('参加者情報が見つかりませんでした。先にルームに参加してください。');
+  }
+
+  Future<void> _submitDrawing() async {
+    if (_isSubmitting) return;
+
+    final roomId = widget.roomId;
+    if (roomId == null || roomId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('roomId が指定されていません。ルーム参加後にお試しください。'),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final size = _getCanvasSize();
+      final bytes = await _captureBytes(size);
+      final displayName = await _resolveDisplayName(roomId);
+      final submissionId = await ref
+          .read(submissionRepositoryProvider)
+          .submitImageBytes(
+            roomId: roomId,
+            displayName: displayName,
+            rawBytes: bytes,
+          );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('送信しました (id: $submissionId)')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('送信に失敗しました: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -193,7 +271,6 @@ class _CanvasPageState extends State<CanvasPage> {
               const SizedBox(height: 12),
               LayoutBuilder(
                 builder: (context, constraints) {
-                 
                   final controls = _PainterControls(
                     controller: _controller,
                     palette: _palette,
@@ -269,10 +346,14 @@ class _CanvasPageState extends State<CanvasPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {},
-                child: const Text(
-                  'けってい！',
-                ),
+                onPressed: _isSubmitting ? null : _submitDrawing,
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('けってい！'),
               ),
             ],
           ),

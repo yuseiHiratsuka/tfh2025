@@ -39,7 +39,9 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/canvas',
-      builder: (context, state) => const CanvasPage(),
+      builder: (context, state) => CanvasPage(
+        roomId: state.uri.queryParameters['roomId'],
+      ),
     ),
     GoRoute(
       path: '/judging',
