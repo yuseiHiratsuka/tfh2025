@@ -34,7 +34,16 @@ class FinalResultPage extends ConsumerWidget {
           return Stack(
             children: [
               Container(
-                color: const Color(0xFF06B7D8),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Color(0xFFFAE6F7), // rgba(204, 3, 170, 0.1) on white
+                      Color(0xFFE6F8FB), // rgba(6, 183, 216, 0.1) on white
+                    ],
+                  ),
+                ),
                 child: CustomScrollView(
                   slivers: [
                     _FinalResultSliverAppBar(room: room),
@@ -105,15 +114,15 @@ class _HeaderInfoPill extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white30),
       ),
       child: Text(
         label,
-        style: textTheme.bodySmall?.copyWith(
+        style: textTheme.labelSmall?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
@@ -133,57 +142,71 @@ class _FinalResultSliverAppBar extends StatelessWidget {
     final textTheme = theme.textTheme;
 
     return SliverAppBar(
-      expandedHeight: 200,
+      expandedHeight: 150,
+      collapsedHeight: 150,
+      toolbarHeight: 150,
+      pinned: true,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
+        expandedTitleScale: 1.0,
         background: Container(
-          padding: const EdgeInsets.fromLTRB(20, 60, 20, 16),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [AppColors.backgroundStart, AppColors.backgroundEnd],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: Color(0xFF301A6B),
+              ),
             ),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
                 'かす素人',
-                style: textTheme.headlineSmall?.copyWith(
+                style: textTheme.titleLarge?.copyWith(
+                  fontSize: 38,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.0,
                   shadows: const [
                     Shadow(
-                      offset: Offset(0, 3),
-                      blurRadius: 12,
+                      offset: Offset(0, 2),
+                      blurRadius: 8,
                       color: Colors.black38,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white30),
                 ),
                 child: Text(
                   '今回のスコア : ${room.score ?? 0}',
-                  style: textTheme.titleSmall?.copyWith(
+                  style: textTheme.bodySmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
               Wrap(
-                spacing: 12,
-                runSpacing: 6,
+                spacing: 8,
+                runSpacing: 4,
                 alignment: WrapAlignment.center,
                 children: [
                   const _HeaderInfoPill(label: '残りタイム : 0秒'),
@@ -263,7 +286,7 @@ class _AIIntroBubble extends StatelessWidget {
                 'みゃくラクAI',
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: colorScheme.shadow,
                 ),
               ),
               const SizedBox(height: 8),
@@ -354,7 +377,7 @@ class _ParticipantHeader extends StatelessWidget {
                 participant.displayName,
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: colorScheme.shadow,
                 ),
               ),
               const SizedBox(height: 8),
@@ -446,7 +469,7 @@ class _AIResponseBubble extends StatelessWidget {
                 'みゃくラクAI',
                 style: textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: colorScheme.shadow,
                 ),
               ),
               const SizedBox(height: 8),
@@ -487,7 +510,6 @@ class _FinalResultFooter extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       child: SizedBox(
         width: double.infinity,
-        height: 56,
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
