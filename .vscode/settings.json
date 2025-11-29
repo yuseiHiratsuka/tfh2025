@@ -20,11 +20,7 @@
   "dart.previewFlutterUiGuidesCustomTracking": true,
   "dart.showTodos": true,
   "dart.enableSnippets": true,
-  "dart.analysisExcludedFolders": [
-    ".dart_tool",
-    ".fvm",
-    "build"
-  ],
+  "dart.analysisExcludedFolders": [".dart_tool", ".fvm", "build"],
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart, ${capture}.freezed.dart"
   },
@@ -56,5 +52,6 @@
     "**/build": true,
     "**/.git": true,
     "**/node_modules": true
-  }
+  },
+  "cSpell.words": ["cupertino", "firestore", "riverpod"]
 }
