@@ -86,6 +86,9 @@ abstract class Room with _$Room {
     /// 準備完了している参加者数
     @JsonKey(defaultValue: 0) required int readyCount,
 
+    /// 合言葉（ルーム検索用）
+    String? password,
+
     /// 失敗理由
     FailureReason? failureReason,
 
@@ -117,12 +120,14 @@ abstract class Room with _$Room {
     required String id,
     required String startCharacter,
     required String goalCharacter,
+    String? password,
     int maxPlayers = 10,
     int timeLimit = 120,
   }) {
     final now = DateTime.now();
     return Room(
       id: id,
+      password: password,
       createdAt: now,
       updatedAt: now,
       status: RoomStatus.waiting,
