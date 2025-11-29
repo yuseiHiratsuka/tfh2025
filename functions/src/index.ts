@@ -183,9 +183,12 @@ export const validateAndAdoptSubmission = functions
         try {
             // トランザクション処理
             const validationResult = await db.runTransaction(async (transaction) => {
-                // 1. roomドキュメント取得
+                // 1. 全ての読み取りを最初に実行
                 const roomRef = db.doc(`rooms/${roomId}`);
+                const participantRef = db.doc(`rooms/${roomId}/participants/${userId}`);
+
                 const roomDoc = await transaction.get(roomRef);
+                const participantDoc = await transaction.get(participantRef);
 
                 if (!roomDoc.exists) {
                     throw new Error(`Room ${roomId} does not exist`);
@@ -258,11 +261,12 @@ export const validateAndAdoptSubmission = functions
 
                 transaction.update(roomRef, roomUpdate);
 
-                // 7. participant更新
-                const participantRef = db.doc(`rooms/${roomId}/participants/${userId}`);
-                transaction.update(participantRef, {
-                    lastSubmittedAt: admin.firestore.Timestamp.now(),
-                });
+                // 7. participant更新（存在する場合のみ）
+                if (participantDoc.exists) {
+                    transaction.update(participantRef, {
+                        lastSubmittedAt: admin.firestore.Timestamp.now(),
+                    });
+                }
 
                 return {
                     isValid: true,
