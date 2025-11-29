@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:rive/rive.dart';
 import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
@@ -20,6 +21,8 @@ class PasswordPage extends ConsumerStatefulWidget {
 class _PasswordPageState extends ConsumerState<PasswordPage> {
   late final TextEditingController _passwordController;
   late final TextEditingController _displayNameController;
+  File? _riveFile;
+  RiveWidgetController? _controller;
 
   @override
   void initState() {
@@ -29,10 +32,24 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
+    _loadRiveFile();
+  }
+
+  Future<void> _loadRiveFile() async {
+    _riveFile = await File.asset(
+      'assets/rive/happy_meeple.riv',
+      riveFactory: Factory.rive,
+    );
+    if (_riveFile != null) {
+      _controller = RiveWidgetController(_riveFile!);
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _controller?.dispose();
+    _riveFile?.dispose();
     _passwordController.dispose();
     _displayNameController.dispose();
     super.dispose();
@@ -146,7 +163,17 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
+            // Riveアニメーション
+            SizedBox(
+              height: 150,
+              child: _controller == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : RiveWidget(
+                      controller: _controller!,
+                    ),
+            ),
+            const SizedBox(height: 24),
             TextFormField(
               controller: _displayNameController,
               decoration: const InputDecoration(
