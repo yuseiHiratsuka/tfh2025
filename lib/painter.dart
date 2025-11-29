@@ -7,7 +7,25 @@ import 'package:image/image.dart' as img;
 
 /// flutter_painter_v2 の最小限のサンプル。
 class PainterPage extends StatefulWidget {
-  const PainterPage({super.key});
+  const PainterPage({
+    super.key,
+    this.controller,
+    this.timerFactory,
+    this.captureBytesOverride,
+    this.renderBoxResolver,
+  });
+
+  /// テスト用に外部から注入できる [PainterController]。
+  final PainterController? controller;
+
+  /// テスト用のタイマー生成フック。
+  final Timer Function(Duration duration, void Function())? timerFactory;
+
+  /// 画像バイト列生成を差し替えるフック。
+  final Future<Uint8List> Function(Size size)? captureBytesOverride;
+
+  /// RenderBox 解決を差し替えるフック。
+  final RenderBox? Function()? renderBoxResolver;
 
   @override
   State<PainterPage> createState() => _PainterPageState();
@@ -16,6 +34,7 @@ class PainterPage extends StatefulWidget {
 class _PainterPageState extends State<PainterPage> {
   Timer? _launchTimer;
   late final PainterController _controller;
+  late final Future<Uint8List> Function(Size size) _captureBytesImpl;
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -27,16 +46,19 @@ class _PainterPageState extends State<PainterPage> {
   @override
   void initState() {
     super.initState();
-    _controller = PainterController(
-      settings: const PainterSettings(
-        freeStyle: FreeStyleSettings(
-          mode: FreeStyleMode.draw,
-          strokeWidth: 5,
-        ),
-      ),
-      background: const ColorBackgroundDrawable(color: Colors.white),
-    );
-    _launchTimer = Timer(
+    _controller = widget.controller ??
+        PainterController(
+          settings: const PainterSettings(
+            freeStyle: FreeStyleSettings(
+              mode: FreeStyleMode.draw,
+              strokeWidth: 5,
+            ),
+          ),
+          background: const ColorBackgroundDrawable(color: Colors.white),
+        );
+    _captureBytesImpl =
+        widget.captureBytesOverride ?? _captureBytesInternal;
+    _launchTimer = (widget.timerFactory ?? Timer.new)(
       const Duration(seconds: 2),
       () {
         if (!mounted) return;
@@ -69,7 +91,11 @@ class _PainterPageState extends State<PainterPage> {
         _controller.freeStyleSettings.copyWith(strokeWidth: value);
   }
 
-  Future<Uint8List> _captureBytes(Size size) async {
+  Future<Uint8List> _captureBytes(Size size) {
+    return _captureBytesImpl(size);
+  }
+
+  Future<Uint8List> _captureBytesInternal(Size size) async {
     final image = await _controller.renderImage(size);
     final byteData = await image.toByteData();
     if (byteData == null) {
@@ -87,8 +113,10 @@ class _PainterPageState extends State<PainterPage> {
   }
 
   Future<void> _exportImage() async {
-    final renderBox =
-        _controller.painterKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = widget.renderBoxResolver != null
+        ? widget.renderBoxResolver!()
+        : _controller.painterKey.currentContext?.findRenderObject()
+            as RenderBox?;
     final size = renderBox?.size ?? const Size(512, 512);
     try {
       final bytes = await _captureBytes(size);
