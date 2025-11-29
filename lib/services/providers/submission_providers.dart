@@ -10,3 +10,12 @@ final adoptedSubmissionsStreamProvider =
         (list) => list.map((data) => Submission.fromJson(data)).toList(),
       );
 });
+
+/// 全ての投稿一覧を取得するプロバイダー
+final allSubmissionsStreamProvider =
+    StreamProvider.family<List<Submission>, String>((ref, roomId) {
+  final repository = ref.watch(submissionRepositoryProvider);
+  return repository.watchAllSubmissions(roomId).map(
+        (list) => list.map((data) => Submission.fromJson(data)).toList(),
+      );
+});
