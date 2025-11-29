@@ -178,7 +178,7 @@ export const validateAndAdoptSubmission = functions
         }
 
         const { word, firstChar, lastChar } = after.aiResult;
-        const { participantId, sequence } = after;
+        const { participantId, sequenceNumber } = after;
 
         try {
             // トランザクション処理
@@ -201,7 +201,7 @@ export const validateAndAdoptSubmission = functions
                 } = roomData;
 
                 // 2. シーケンス番号チェック
-                if (sequence !== currentSequence) {
+                if (sequenceNumber !== currentSequence) {
                     return {
                         isValid: false,
                         isAdopted: false,
