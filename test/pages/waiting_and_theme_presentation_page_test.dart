@@ -104,7 +104,8 @@ void main() {
 
       await tester.pumpWidget(
         _buildApp(
-          child: const WaitingRoomPage(roomId: roomId),
+          child:
+              const WaitingRoomPage(roomId: roomId, password: 'test-password'),
           roomId: roomId,
           firestore: firestore,
           auth: auth,
@@ -200,7 +201,8 @@ void main() {
 
       await tester.pumpWidget(
         _buildApp(
-          child: const WaitingRoomPage(roomId: roomId),
+          child:
+              const WaitingRoomPage(roomId: roomId, password: 'test-password'),
           roomId: roomId,
           firestore: firestore,
           auth: masterAuth,
@@ -216,7 +218,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       expect(find.text('ゲーム開始'), findsOneWidget);
-      expect(find.text('マスターの開始を待っています...'), findsNothing);
+      expect(find.text('ゲーム開始を待っています...'), findsNothing);
 
       final guestUser = MockUser(uid: 'guest');
       final guestAuth = MockFirebaseAuth(mockUser: guestUser, signedIn: true);
@@ -225,7 +227,8 @@ void main() {
 
       await tester.pumpWidget(
         _buildApp(
-          child: const WaitingRoomPage(roomId: roomId),
+          child:
+              const WaitingRoomPage(roomId: roomId, password: 'test-password'),
           roomId: roomId,
           firestore: firestore,
           auth: guestAuth,
@@ -240,7 +243,7 @@ void main() {
 
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
-      expect(find.text('マスターの開始を待っています...'), findsOneWidget);
+      expect(find.text('ゲーム開始を待っています...'), findsOneWidget);
       expect(find.text('ゲーム開始'), findsNothing);
     });
 
@@ -258,7 +261,8 @@ void main() {
 
       await tester.pumpWidget(
         _buildApp(
-          child: const WaitingRoomPage(roomId: roomId),
+          child:
+              const WaitingRoomPage(roomId: roomId, password: 'test-password'),
           roomId: roomId,
           firestore: firestore,
           auth: auth,
