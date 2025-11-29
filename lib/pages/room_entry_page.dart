@@ -28,15 +28,15 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => context.go('/room_entry'),
-              child: const Text('「新しいルーム」を作成'),
-            ),
-            const SizedBox(height: 24),
             Text(
               '新しいルームを作成します。',
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.go('/password?create=true'),
+              child: const Text('「新しいルーム」を作成'),
             ),
             const SizedBox(height: 40),
             Text(
@@ -46,7 +46,7 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              '「あいことば」を入力して知り合いと一緒に\nゲームを楽しめます。',
+              '「あいことば」を入力して友達と一緒に\nゲームを楽しめます。',
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),

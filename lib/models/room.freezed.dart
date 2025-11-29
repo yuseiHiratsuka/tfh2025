@@ -17,6 +17,9 @@ mixin _$Room {
   /// ドキュメントID
   String get id;
 
+  /// 合言葉（ルーム検索用）
+  String? get password;
+
   /// 作成日時
   @TimestampConverter()
   DateTime get createdAt;
@@ -104,6 +107,8 @@ mixin _$Room {
         (other.runtimeType == runtimeType &&
             other is Room &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -152,6 +157,7 @@ mixin _$Room {
   int get hashCode => Object.hashAll([
         runtimeType,
         id,
+        password,
         createdAt,
         updatedAt,
         status,
@@ -178,7 +184,7 @@ mixin _$Room {
 
   @override
   String toString() {
-    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
   }
 }
 
@@ -189,6 +195,7 @@ abstract mixin class $RoomCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
+      String? password,
       @TimestampConverter() DateTime createdAt,
       @TimestampConverter() DateTime updatedAt,
       RoomStatus status,
@@ -226,6 +233,7 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
   @override
   $Res call({
     Object? id = null,
+    Object? password = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? status = null,
@@ -254,6 +262,10 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
+      password: freezed == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -441,6 +453,7 @@ extension RoomPatterns on Room {
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
             String id,
+            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -471,6 +484,7 @@ extension RoomPatterns on Room {
       case _Room() when $default != null:
         return $default(
             _that.id,
+            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -515,6 +529,7 @@ extension RoomPatterns on Room {
   TResult when<TResult extends Object?>(
     TResult Function(
             String id,
+            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -544,6 +559,7 @@ extension RoomPatterns on Room {
       case _Room():
         return $default(
             _that.id,
+            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -587,6 +603,7 @@ extension RoomPatterns on Room {
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
             String id,
+            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -616,6 +633,7 @@ extension RoomPatterns on Room {
       case _Room() when $default != null:
         return $default(
             _that.id,
+            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -649,6 +667,7 @@ extension RoomPatterns on Room {
 class _Room extends Room {
   const _Room(
       {required this.id,
+      this.password,
       @TimestampConverter() required this.createdAt,
       @TimestampConverter() required this.updatedAt,
       required this.status,
@@ -678,6 +697,10 @@ class _Room extends Room {
   /// ドキュメントID
   @override
   final String id;
+
+  /// 合言葉（ルーム検索用）
+  @override
+  final String? password;
 
   /// 作成日時
   @override
@@ -800,6 +823,8 @@ class _Room extends Room {
         (other.runtimeType == runtimeType &&
             other is _Room &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -849,6 +874,7 @@ class _Room extends Room {
   int get hashCode => Object.hashAll([
         runtimeType,
         id,
+        password,
         createdAt,
         updatedAt,
         status,
@@ -875,7 +901,7 @@ class _Room extends Room {
 
   @override
   String toString() {
-    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
   }
 }
 
@@ -887,6 +913,7 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
+      String? password,
       @TimestampConverter() DateTime createdAt,
       @TimestampConverter() DateTime updatedAt,
       RoomStatus status,
@@ -924,6 +951,7 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   $Res call({
     Object? id = null,
+    Object? password = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? status = null,
@@ -952,6 +980,10 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
+      password: freezed == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
