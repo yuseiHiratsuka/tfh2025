@@ -17,10 +17,11 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
 
     return Scaffold(
       body: Background(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Text(
               '「新しいルーム」\nを作成',
               style: theme.textTheme.titleMedium,
@@ -55,6 +56,7 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
               child: const Text('「あいことば」を入力'),
             ),
           ],
+        ),
         ),
       ),
     );
