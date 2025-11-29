@@ -349,7 +349,7 @@ function shouldAISubmit(chainCount: number): boolean {
  * @returns 画像のバイナリデータ
  */
 async function generateSimpleImage(word: string): Promise<Buffer> {
-    const prompt = `「${word}」を表すシンプルで分かりやすいイラスト。子供が描いたような簡単な絵。背景は白。`;
+    const prompt = `「${word}」を表すシンプルな白黒イラスト。一筆書き風。背景は白。`;
 
     const response = await genAIImage.models.generateContent({
         model: "gemini-2.5-flash-image",
