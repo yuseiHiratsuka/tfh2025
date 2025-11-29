@@ -33,6 +33,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   late final PainterController _controller;
   bool _isSubmitting = false;
   Room? _lastRoom;
+  bool _isCanvasInteracting = false;
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -331,6 +332,9 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
         room.usedWords.isEmpty ? 'スタート' : room.usedWords.last;
 
     return ListView(
+      physics: _isCanvasInteracting
+          ? const NeverScrollableScrollPhysics()
+          : const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         const SizedBox(height: 12),
@@ -439,7 +443,15 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                       aspectRatio: 1,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: FlutterPainter(controller: _controller),
+                        child: Listener(
+                          onPointerDown: (_) =>
+                              setState(() => _isCanvasInteracting = true),
+                          onPointerUp: (_) =>
+                              setState(() => _isCanvasInteracting = false),
+                          onPointerCancel: (_) =>
+                              setState(() => _isCanvasInteracting = false),
+                          child: FlutterPainter(controller: _controller),
+                        ),
                       ),
                     ),
                   ),
