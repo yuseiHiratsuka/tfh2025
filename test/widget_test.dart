@@ -6,6 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tfh2025/services/data/datasources/firestore_datasource.dart';
 import 'package:tfh2025/services/repositories/test_repository.dart';
 import 'package:tfh2025/main.dart';
@@ -42,7 +43,11 @@ void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     // モックのTestRepositoryを使用してFirebaseへの依存を回避
-    await tester.pumpWidget(App(testRepository: MockTestRepository()));
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: App(),
+      ),
+    );
 
     // 必ず通るテスト（検証なし）
   });
