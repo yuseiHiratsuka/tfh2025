@@ -11,7 +11,11 @@ const db = admin.firestore();
 // firebase functions:secrets:set GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const processSubmissionImage = functions.firestore
+export const processSubmissionImage = functions
+    .runWith({
+        secrets: ["GEMINI_API_KEY"],
+    })
+    .firestore
     .document("rooms/{roomId}/submissions/{submissionId}")
     .onCreate(async (snapshot, context) => {
         const data = snapshot.data();
