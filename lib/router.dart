@@ -4,6 +4,7 @@ import 'package:tfh2025/pages/final_result_page.dart';
 import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
 import 'package:tfh2025/pages/password_page.dart';
+import 'package:tfh2025/pages/ready_waiting_room_page.dart';
 import 'package:tfh2025/pages/room_entry_page.dart';
 import 'package:tfh2025/pages/theme_presentation_page.dart';
 import 'package:tfh2025/pages/top_page.dart';
@@ -33,6 +34,12 @@ final router = GoRouter(
     GoRoute(
       path: '/theme_presentation/:roomId',
       builder: (context, state) => ThemePresentationPage(
+        roomId: state.pathParameters['roomId']!,
+      ),
+    ),
+    GoRoute(
+      path: '/ready_waiting/:roomId',
+      builder: (context, state) => ReadyWaitingRoomPage(
         roomId: state.pathParameters['roomId']!,
       ),
     ),

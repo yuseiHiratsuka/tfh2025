@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:rive_native/rive_native.dart' as rive;
 import 'package:tfh2025/components/loading_overlay.dart';
 import 'package:tfh2025/theme/app_theme.dart';
 
@@ -11,6 +12,7 @@ import 'services/repositories/test_repository.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await rive.RiveNative.init();
 
   // SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 

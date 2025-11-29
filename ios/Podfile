@@ -28,7 +28,21 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks! :linkage => :static
+  use_frameworks!
+
+  $static_framework = ['YandexMobileAds', 'yandex_mobileads']
+
+  pre_install do |installer|
+    installer.pod_targets.each do |pod|
+      if $static_framework.include?(pod.name)
+        puts "Overriding the #{pod.name} library linking to static linking"
+        def pod.build_type;
+          Pod::BuildType.static_framework
+        end
+      end
+    end
+  end
+
   use_modular_headers!
 
   # プリコンパイル済みFirebaseフレームワークを使用してビルドを高速化
