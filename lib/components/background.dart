@@ -49,7 +49,7 @@ class Background extends StatelessWidget {
 }
 
 class _ScrollableBackground extends StatelessWidget {
-  const _ScrollableBackground({required this.child, super.key});
+  const _ScrollableBackground({required this.child});
 
   final Widget child;
 
