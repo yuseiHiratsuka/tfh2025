@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 /// ベースカラーをまとめておくことで配色の差し替えをしやすくする。
 class AppColors {
   static const Color primary = Color.fromRGBO(174, 174, 29, 1);
-  static const Color secondary = Color(0xFFF59E0B);
+  static const Color secondary = Color.fromRGBO(245, 158, 11, 1);
   static const Color surfaceLight = Colors.white;
   static const Color backgroundLight = Color(0xFFF6F7FB);
   static const Color surfaceDark = Color(0xFF111827);
   static const Color backgroundDark = Color(0xFF0B1220);
   static const Color error = Color(0xFFDC2626);
+  static const Color onSurface = Colors.white;
+  static const Color backgroundStart = Color(0xFFCF00A9);
+  static const Color backgroundEnd = Color(0xFF00BCD9);
 }
 
 class AppTheme {
@@ -19,6 +22,7 @@ class AppTheme {
     secondary: AppColors.secondary,
     surface: AppColors.surfaceLight,
     error: AppColors.error,
+    onSurface: AppColors.onSurface,
   );
 
   static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
@@ -28,6 +32,7 @@ class AppTheme {
     secondary: AppColors.secondary,
     surface: AppColors.surfaceDark,
     error: AppColors.error,
+    onSurface: AppColors.onSurface,
   );
 
   static final ThemeData light = _theme(lightColorScheme);
@@ -61,9 +66,7 @@ class AppTheme {
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: const StadiumBorder(),
           textStyle: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
