@@ -1,7 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as sharp from "sharp";
 
 admin.initializeApp();
 
@@ -322,18 +321,45 @@ function shouldAISubmit(chainCount: number): boolean {
 }
 
 /**
- * プレースホルダー画像生成関数
- * 単語をテキストとして含む簡単な画像を生成
+ * Gemini (Imagen 3) を使用して画像を生成
+ * @param word 生成する単語
+ * @returns 画像のバイナリデータ
  */
-async function generatePlaceholderImage(word: string): Promise<Buffer> {
-    const svg = `
-    <svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
-      <rect width="400" height="400" fill="white"/>
-      <text x="200" y="200" font-size="60" text-anchor="middle" fill="black">${word}</text>
-    </svg>
-  `;
+async function generateImageWithGemini(word: string): Promise<Buffer> {
+    const prompt = `「${word}」を表すシンプルで分かりやすいイラスト。子供が描いたような簡単な絵。背景は白。`;
 
-    return await sharp(Buffer.from(svg)).jpeg().toBuffer();
+    const body = {
+        instances: [{ prompt }],
+        parameters: {
+            aspectRatio: "1:1",
+            numberOfImages: 1,
+        },
+    };
+
+    const modelName = "imagen-3.0-generate-002";
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Imagen API error: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.predictions || result.predictions.length === 0) {
+        throw new Error("No image generated from Imagen API");
+    }
+
+    const imageBase64 = result.predictions[0].bytesBase64Encoded;
+    return Buffer.from(imageBase64, "base64");
 }
 
 /**
@@ -417,18 +443,22 @@ ${goalCharacter ? `できるだけ「${goalCharacter}」で終わる単語は避
 
             console.log(`AI generated word: ${targetWord} for room ${roomId}`);
 
-            // 2. 画像を生成 (プレースホルダー)
-            const imageBuffer = await generatePlaceholderImage(targetWord);
+            // 2. 画像を生成 (Gemini Imagen 3)
+            const imageBuffer = await generateImageWithGemini(targetWord);
+
+            // 画像フォーマットを判定（JPEGまたはPNG）
+            const mimeType = imageBuffer[0] === 0xFF && imageBuffer[1] === 0xD8 ? "image/jpeg" : "image/png";
+            const extension = mimeType === "image/jpeg" ? "jpg" : "png";
 
             // 3. Storage に保存
             const timestamp = Date.now();
-            const storagePath = `rooms/${roomId}/submissions/ai_participant_${timestamp}.jpg`;
+            const storagePath = `rooms/${roomId}/submissions/ai_participant_${timestamp}.${extension}`;
             const bucket = admin.storage().bucket();
             const file = bucket.file(storagePath);
 
             await file.save(imageBuffer, {
                 metadata: {
-                    contentType: "image/jpeg",
+                    contentType: mimeType,
                 },
             });
 
