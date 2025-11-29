@@ -95,5 +95,38 @@ void main() {
       final roomSnap = await firestore.collection('rooms').doc(roomId).get();
       expect(roomSnap.data()?['status'], 'waiting');
     });
+
+    test('waiting以外のステータスでは開始できず、isReadyも変更しない', () async {
+      final repository = buildRepository(masterId);
+
+      await firestore.collection('rooms').doc(roomId).set({
+        'status': 'playing',
+        'readyCount': 0,
+        'totalParticipants': 1,
+      });
+      final participantsRef =
+          firestore.collection('rooms').doc(roomId).collection('participants');
+      await participantsRef
+          .doc(masterId)
+          .set(_participantData(userId: masterId, isMaster: true, isReady: true));
+
+      await expectLater(
+        repository.startPresentation(roomId: roomId),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            contains('ゲームは既に開始されています'),
+          ),
+        ),
+      );
+
+      final roomSnap = await firestore.collection('rooms').doc(roomId).get();
+      expect(roomSnap.data()?['status'], 'playing');
+      expect(roomSnap.data()?['readyCount'], 0);
+
+      final participantSnap = await participantsRef.doc(masterId).get();
+      expect(participantSnap.data()?['isReady'], isTrue);
+    });
   });
 }
