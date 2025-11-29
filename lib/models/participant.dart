@@ -21,6 +21,9 @@ abstract class Participant with _$Participant {
     /// 準備完了フラグ
     @JsonKey(defaultValue: false) required bool isReady,
 
+    /// ルームマスターかどうか
+    @JsonKey(defaultValue: false) required bool isMaster,
+
     /// アバター画像URL
     String? avatarUrl,
 
@@ -38,6 +41,7 @@ abstract class Participant with _$Participant {
     required String userId,
     required String displayName,
     String? avatarUrl,
+    bool isMaster = false,
   }) {
     return Participant(
       userId: userId,
@@ -45,6 +49,7 @@ abstract class Participant with _$Participant {
       avatarUrl: avatarUrl,
       joinedAt: DateTime.now(),
       isReady: false,
+      isMaster: isMaster,
     );
   }
 }
