@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tfh2025/canvas.dart';
 import 'package:tfh2025/models/participant.dart';
-import 'package:tfh2025/painter.dart';
 import 'package:tfh2025/services/providers/firebase_providers.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
@@ -127,6 +127,7 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    final colorScheme = Theme.of(context).colorScheme;
     final roomId = _roomIdController.text.trim();
     final currentUserId =
         authState.value?.uid ?? ref.read(authRepositoryProvider).currentUserId;
@@ -161,17 +162,45 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
           children: [
             TextField(
               controller: _roomIdController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'ルームID',
                 hintText: '既存のroomIdを入力',
+                filled: true,
+                fillColor: colorScheme.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 3),
+                ),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _displayNameController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: '表示名',
                 hintText: 'プレイヤー名を入力',
+                filled: true,
+                fillColor: colorScheme.surface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 3),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -296,11 +325,11 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute<void>(
-                        builder: (context) => const PainterPage(),
+                        builder: (context) => const CanvasPage(),
                       ),
                     );
                   },
-                  child: const Text('ペインター画面へ'),
+                  child: const Text('キャンバス画面へ'),
                 ),
               ],
             ),
