@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:tfh2025/components/loading_overlay.dart';
 import 'package:tfh2025/theme/app_theme.dart';
 
 import 'firebase_options.dart';
@@ -27,12 +28,14 @@ class App extends StatelessWidget {
       theme: AppTheme.light,
       routerConfig: router,
       builder: (context, child) {
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: child,
+        return LoadingOverlay(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child,
+          ),
         );
       },
     );
