@@ -60,8 +60,8 @@ class _PainterPageState extends State<PainterPage> {
   }
 
   void _setColor(Color color) {
-    _controller.freeStyleSettings =
-        _controller.freeStyleSettings.copyWith(color: color, mode: FreeStyleMode.draw);
+    _controller.freeStyleSettings = _controller.freeStyleSettings
+        .copyWith(color: color, mode: FreeStyleMode.draw);
   }
 
   void _setStroke(double value) {
@@ -199,7 +199,6 @@ class _PainterControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     return AnimatedBuilder(
       animation: controller,
       builder: (_, __) {
@@ -224,7 +223,11 @@ class _PainterControls extends StatelessWidget {
                         radius: 18,
                         backgroundColor: color,
                         child: isSelected
-                            ? const Icon(Icons.check, color: Colors.white, size: 18)
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 18,
+                              )
                             : null,
                       ),
                     );
