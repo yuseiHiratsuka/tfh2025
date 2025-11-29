@@ -287,6 +287,7 @@
 | lastSubmittedAt | Timestamp \| null | ○ | 最後の投稿日時 | 2024-01-01 10:01:05 |
 | isReady | boolean | ○ | 準備完了フラグ | false |
 | isMaster | boolean | ○ | ルームマスターかどうか | false |
+| isAI | boolean | ○ | AI参加者かどうか | false |
 
 **インデックス:**
 ```
