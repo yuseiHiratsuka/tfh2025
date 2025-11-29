@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tfh2025/theme/app_theme.dart';
 
-import 'services/repositories/test_repository.dart';
 import 'firebase_options.dart';
 import 'router.dart';
+import 'services/repositories/test_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
