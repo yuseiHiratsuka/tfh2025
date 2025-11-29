@@ -23,12 +23,15 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/password',
-      builder: (context, state) => const PasswordPage(),
+      builder: (context, state) => PasswordPage(
+        isCreateMode: state.uri.queryParameters['create'] == 'true',
+      ),
     ),
     GoRoute(
       path: '/waiting_room/:roomId',
       builder: (context, state) => WaitingRoomPage(
         roomId: state.pathParameters['roomId']!,
+        password: state.uri.queryParameters['password']!,
       ),
     ),
     GoRoute(

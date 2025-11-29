@@ -57,8 +57,14 @@
 
 **スコア計算の方針:**
 
-- `status` が `success` の場合: `score = timeBonus + chainBonus` として保存する。
-- `status` が `failed` の場合: `score` は常に `0` とし、`chainBonus` にチェーン数に応じた値（例: `chainCount * 1000`）を保存してもよい。
+- `status` が `success` の場合:
+  - `timeBonus = 残り時間(秒数) × 50`
+  - `chainBonus = chainCount × 1000`
+  - `score = timeBonus + chainBonus`
+- `status` が `failed` の場合:
+  - `score = 0`
+  - `timeBonus = 0`
+  - `chainBonus = chainCount × 1000`（途中経過の記録として保存）
 
 **インデックス:**
 ```
@@ -212,30 +218,38 @@
   "updatedAt": "2024-01-01T10:01:15Z",
   "status": "success",
   "failureReason": null,
-  
+
   "startCharacter": "り",
   "goalCharacter": "き",
   "maxPlayers": 10,
   "timeLimit": 120,
   "startedAt": "2024-01-01T10:00:30Z",
-  
+
   "currentCharacter": "き",
   "currentSequence": 6,
   "usedWords": ["りんご", "ごりら", "らっぱ", "ぱんだ", "だるま", "まき"],
   "chainCount": 6,
-  
+
   "isGoalReached": true,
   "goalReachedBy": "anonymous_abc123",
   "finishedAt": "2024-01-01T10:01:15Z",
-  
+
   "score": 9750,
   "timeBonus": 3750,
   "chainBonus": 6000,
-  
+
   "totalSubmissions": 25,
   "totalParticipants": 4
 }
 ```
+
+※スコア計算の内訳:
+
+- 経過時間: 45秒（10:01:15 - 10:00:30）
+- 残り時間: 75秒（120 - 45）
+- timeBonus = 75 × 50 = 3750点
+- chainBonus = 6 × 1000 = 6000点
+- score = 3750 + 6000 = 9750点
 
 **タイムアウト失敗時の例:**
 ```json

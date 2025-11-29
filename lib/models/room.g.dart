@@ -8,6 +8,7 @@ part of 'room.dart';
 
 _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
       id: json['id'] as String,
+      password: json['password'] as String?,
       createdAt: const TimestampConverter().fromJson(json['createdAt']),
       updatedAt: const TimestampConverter().fromJson(json['updatedAt']),
       status: $enumDecode(_$RoomStatusEnumMap, json['status']),
@@ -37,6 +38,7 @@ _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
 
 Map<String, dynamic> _$RoomToJson(_Room instance) => <String, dynamic>{
       'id': instance.id,
+      'password': instance.password,
       'createdAt': const TimestampConverter().toJson(instance.createdAt),
       'updatedAt': const TimestampConverter().toJson(instance.updatedAt),
       'status': _$RoomStatusEnumMap[instance.status]!,

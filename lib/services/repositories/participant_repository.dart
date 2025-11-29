@@ -19,20 +19,46 @@ class ParticipantRepository {
 
   /// 参加フロー: 参加者ドキュメントを作成し、ルームの totalParticipants をインクリメント
   /// 最初の参加者はマスターになる
+  /// passwordが指定された場合は、パスワードでルームを検索する
   Future<Participant> joinRoom({
-    required String roomId,
     required String displayName,
+    String? roomId,
+    String? password,
     String? avatarUrl,
   }) async {
     debugPrint(
-      '[ParticipantRepository] joinRoom: 開始 roomId=$roomId, displayName=$displayName',
+      '[ParticipantRepository] joinRoom: 開始 roomId=$roomId, password=$password, displayName=$displayName',
     );
     try {
       debugPrint('[ParticipantRepository] 認証を開始します');
       final user = await _authRepository.signInAnonymouslyIfNeeded();
       debugPrint('[ParticipantRepository] 認証成功: userId=${user.uid}');
 
-      final roomRef = _firestore.collection('rooms').doc(roomId);
+      // パスワードが指定されている場合は、パスワードでルームを検索
+      String? targetRoomId = roomId;
+      if (password != null && password.isNotEmpty) {
+        debugPrint('[ParticipantRepository] パスワードでルーム検索: password=$password');
+        final querySnapshot = await _firestore
+            .collection('rooms')
+            .where('password', isEqualTo: password)
+            .where('status', isEqualTo: 'waiting')
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isEmpty) {
+          debugPrint('[ParticipantRepository] エラー: 合言葉に一致するルームが見つかりません');
+          throw StateError('合言葉に一致するルームが見つかりません');
+        }
+
+        targetRoomId = querySnapshot.docs.first.id;
+        debugPrint('[ParticipantRepository] ルーム検索成功: roomId=$targetRoomId');
+      }
+
+      if (targetRoomId == null || targetRoomId.isEmpty) {
+        throw StateError('ルームIDまたは合言葉を指定してください');
+      }
+
+      final roomRef = _firestore.collection('rooms').doc(targetRoomId);
       final participantRef = roomRef.collection('participants').doc(user.uid);
 
       late Participant participant;

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,24 +6,26 @@ import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
+import 'package:tfh2025/services/repositories/room_repository.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
-  const PasswordPage({super.key});
+  const PasswordPage({required this.isCreateMode, super.key});
+
+  final bool isCreateMode;
+
   @override
   ConsumerState<PasswordPage> createState() => _PasswordPageState();
 }
 
 class _PasswordPageState extends ConsumerState<PasswordPage> {
-  late final TextEditingController _roomIdController;
+  late final TextEditingController _passwordController;
   late final TextEditingController _displayNameController;
 
   @override
   void initState() {
     super.initState();
-    _roomIdController = TextEditingController(text: 'L7qqB8lctYU9niXqOKOT');
-    _displayNameController = TextEditingController(
-      text: 'プレイヤー${DateTime.now().millisecondsSinceEpoch % 10000}',
-    );
+    _passwordController = TextEditingController();
+    _displayNameController = TextEditingController();
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
@@ -30,23 +33,24 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
 
   @override
   void dispose() {
-    _roomIdController.dispose();
+    _passwordController.dispose();
     _displayNameController.dispose();
     super.dispose();
   }
 
-  Future<void> _joinRoom() async {
-    final roomIdText = _roomIdController.text.trim();
+  Future<void> _handleSubmit() async {
+    final passwordText = _passwordController.text.trim();
     final nameText = _displayNameController.text.trim();
+    final mode = widget.isCreateMode ? '作成' : '参加';
     debugPrint(
-      '[RoomEntryPage] _joinRoom: 開始 roomId=$roomIdText, displayName=$nameText',
+      '[PasswordPage] _handleSubmit: 開始 mode=$mode, password=$passwordText, displayName=$nameText',
     );
 
-    if (roomIdText.isEmpty || nameText.isEmpty) {
-      debugPrint('[RoomEntryPage] バリデーションエラー: 入力が空です');
+    if (passwordText.isEmpty || nameText.isEmpty) {
+      debugPrint('[PasswordPage] バリデーションエラー: 入力が空です');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('ルームIDと表示名を入力してください')),
+          const SnackBar(content: Text('合言葉とプレイヤー名を入力してください')),
         );
       }
       return;
@@ -55,22 +59,60 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
     ref.read(loadingProvider.notifier).show();
 
     try {
-      debugPrint('[RoomEntryPage] joinRoom呼び出し開始');
-      await ref.read(participantRepositoryProvider).joinRoom(
-            roomId: roomIdText,
-            displayName: nameText,
-          );
-      debugPrint('[RoomEntryPage] joinRoom成功');
+      String roomId;
+
+      if (widget.isCreateMode) {
+        // 作成モード: 新しいルームを作成
+        debugPrint('[PasswordPage] ルーム作成開始');
+        final room = await ref.read(roomRepositoryProvider).createRoom(
+              password: passwordText,
+            );
+        debugPrint('[PasswordPage] ルーム作成成功: roomId=${room.id}');
+        roomId = room.id;
+
+        // 作成したルームに参加
+        debugPrint('[PasswordPage] ルーム参加開始');
+        await ref.read(participantRepositoryProvider).joinRoom(
+              roomId: roomId,
+              displayName: nameText,
+            );
+        debugPrint('[PasswordPage] ルーム参加成功');
+      } else {
+        // 参加モード: 既存のルームに参加
+        debugPrint('[PasswordPage] joinRoom呼び出し開始');
+        await ref.read(participantRepositoryProvider).joinRoom(
+              password: passwordText,
+              displayName: nameText,
+            );
+        debugPrint('[PasswordPage] joinRoom成功');
+
+        // 参加したルームのIDを取得するため、Firestoreから取得
+        final roomsSnapshot = await FirebaseFirestore.instance
+            .collection('rooms')
+            .where('password', isEqualTo: passwordText)
+            .where('status', isEqualTo: 'waiting')
+            .limit(1)
+            .get();
+
+        if (roomsSnapshot.docs.isEmpty) {
+          throw StateError('ルームが見つかりません');
+        }
+
+        roomId = roomsSnapshot.docs.first.id;
+        debugPrint('[PasswordPage] ルームID取得成功: roomId=$roomId');
+      }
+
       if (mounted) {
         // 待機画面へ遷移
-        context.go('/waiting_room/$roomIdText');
+        context.go('/waiting_room/$roomId?password=$passwordText');
       }
     } catch (e, stackTrace) {
-      debugPrint('[RoomEntryPage] joinRoomエラー: $e');
-      debugPrint('[RoomEntryPage] スタックトレース: $stackTrace');
+      debugPrint('[PasswordPage] エラー: $e');
+      debugPrint('[PasswordPage] スタックトレース: $stackTrace');
       if (mounted) {
+        final errorMessage = widget.isCreateMode ? '作成に失敗しました' : '参加に失敗しました';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('参加に失敗しました: $e')),
+          SnackBar(content: Text('$errorMessage: $e')),
         );
       }
     } finally {
@@ -81,36 +123,53 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final title = widget.isCreateMode ? '「あいことば」\nを決める' : '「あいことば」\nを入力';
+    final description = widget.isCreateMode
+        ? '新しいルームを作成します。\n「あいことば」を決めてください。'
+        : '入力した「あいことば」のルームに\n参加します。';
+    final buttonText = widget.isCreateMode ? 'ルームを作成' : 'ルームに参加';
 
     return Scaffold(
       body: Background(
+        scrollable: true,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '「あいことば」\nを入力',
+              title,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             Text(
-              '入力した「あいことば」のルームに\n参加します。',
+              description,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
             TextFormField(
+              controller: _displayNameController,
               decoration: const InputDecoration(
-                hintText: '例：うめこぶちゃ',
+                labelText: 'プレイヤー名',
+                hintText: '例: たろう',
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                labelText: 'あいことば',
+                hintText: '例: うめこぶちゃ',
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                ref.read(loadingProvider) ? null : _joinRoom();
+                ref.read(loadingProvider) ? null : _handleSubmit();
               },
-              child: const Text('ルームに参加'),
+              child: Text(buttonText),
             ),
           ],
         ),
