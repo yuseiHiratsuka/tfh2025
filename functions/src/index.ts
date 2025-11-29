@@ -253,12 +253,27 @@ export const validateAndAdoptSubmission = functions
 
                 // ゴール達成時のスコア計算
                 if (isGoalReached) {
-                    const score = newChainCount * 100; // 簡単なスコア計算例
+                    const now = admin.firestore.Timestamp.now();
+
+                    // 残り時間の計算
+                    let remainingTime = 0;
+                    if (roomData.startedAt && roomData.timeLimit) {
+                        const elapsedSeconds = now.seconds - roomData.startedAt.seconds;
+                        remainingTime = Math.max(0, roomData.timeLimit - elapsedSeconds);
+                    }
+
+                    // スコア計算: 残り時間(秒数) x 50点 + 絵が繋がった回数 x 1000点
+                    const timeBonus = remainingTime * 50;
+                    const chainBonus = newChainCount * 1000;
+                    const totalScore = timeBonus + chainBonus;
+
                     roomUpdate.status = "success";
                     roomUpdate.isGoalReached = true;
                     roomUpdate.goalReachedBy = userId;
-                    roomUpdate.finishedAt = admin.firestore.Timestamp.now();
-                    roomUpdate.score = score;
+                    roomUpdate.finishedAt = now;
+                    roomUpdate.score = totalScore;
+                    roomUpdate.timeBonus = timeBonus;
+                    roomUpdate.chainBonus = chainBonus;
                 }
 
                 transaction.update(roomRef, roomUpdate);
