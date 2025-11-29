@@ -6,8 +6,8 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tfh2025/data/datasources/firestore_datasource.dart';
-import 'package:tfh2025/data/repositories/test_repository.dart';
+import 'package:tfh2025/services/data/datasources/firestore_datasource.dart';
+import 'package:tfh2025/services/repositories/test_repository.dart';
 import 'package:tfh2025/main.dart';
 
 /// テスト用のモックFirestoreDatasource

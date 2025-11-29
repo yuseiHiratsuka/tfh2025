@@ -1,4 +1,4 @@
-import '../datasources/firestore_datasource.dart';
+import '../data/datasources/firestore_datasource.dart';
 
 /// テストデータのリポジトリ層
 /// ビジネスロジックを担当
