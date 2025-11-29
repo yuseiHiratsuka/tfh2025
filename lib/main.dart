@@ -12,7 +12,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({this.testRepository, super.key});
+
+  final TestRepository? testRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +22,23 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(
+        title: 'Flutter Demo Home Page',
+        testRepository: testRepository,
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({required this.title, super.key});
+  const MyHomePage({
+    required this.title,
+    this.testRepository,
+    super.key,
+  });
 
   final String title;
+  final TestRepository? testRepository;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -36,9 +46,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  final TestRepository _testRepository = TestRepository();
+  late final TestRepository _testRepository;
   String? _savedDocumentId;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _testRepository = widget.testRepository ?? TestRepository();
+  }
 
   void _incrementCounter() {
     setState(() {
