@@ -1,6 +1,7 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 admin.initializeApp();
 
@@ -10,6 +11,7 @@ const db = admin.firestore();
 // Note: You need to set the GEMINI_API_KEY environment variable
 // firebase functions:secrets:set GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAIImage = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export const processSubmissionImage = functions
     .runWith({
@@ -342,45 +344,35 @@ function shouldAISubmit(chainCount: number): boolean {
 }
 
 /**
- * Gemini (Imagen 3) を使用して画像を生成
+ * Nano Banana (Gemini 2.5 Flash Image) を使って画像を生成する
  * @param word 生成する単語
  * @returns 画像のバイナリデータ
  */
-async function generateImageWithGemini(word: string): Promise<Buffer> {
+async function generateSimpleImage(word: string): Promise<Buffer> {
     const prompt = `「${word}」を表すシンプルで分かりやすいイラスト。子供が描いたような簡単な絵。背景は白。`;
 
-    const body = {
-        instances: [{ prompt }],
-        parameters: {
-            aspectRatio: "1:1",
-            numberOfImages: 1,
-        },
-    };
+    const response = await genAIImage.models.generateContent({
+        model: "gemini-2.5-flash-image",
+        contents: prompt,
+    });
 
-    const modelName = "imagen-3.0-generate-002";
-    const apiKey = process.env.GEMINI_API_KEY;
+    // 画像データを取得
+    if (!response.candidates || response.candidates.length === 0) {
+        throw new Error("No candidates returned from Gemini");
+    }
 
-    const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:predict?key=${apiKey}`,
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
+    const candidate = response.candidates[0];
+    if (!candidate || !candidate.content || !candidate.content.parts) {
+        throw new Error("Invalid response structure from Gemini");
+    }
+
+    for (const part of candidate.content.parts) {
+        if (part.inlineData && part.inlineData.data) {
+            return Buffer.from(part.inlineData.data, "base64");
         }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Imagen API error: ${response.status} ${response.statusText}`);
     }
 
-    const result = await response.json();
-
-    if (!result.predictions || result.predictions.length === 0) {
-        throw new Error("No image generated from Imagen API");
-    }
-
-    const imageBase64 = result.predictions[0].bytesBase64Encoded;
-    return Buffer.from(imageBase64, "base64");
+    throw new Error("No image generated from Gemini");
 }
 
 /**
@@ -464,22 +456,18 @@ ${goalCharacter ? `できるだけ「${goalCharacter}」で終わる単語は避
 
             console.log(`AI generated word: ${targetWord} for room ${roomId}`);
 
-            // 2. 画像を生成 (Gemini Imagen 3)
-            const imageBuffer = await generateImageWithGemini(targetWord);
-
-            // 画像フォーマットを判定（JPEGまたはPNG）
-            const mimeType = imageBuffer[0] === 0xFF && imageBuffer[1] === 0xD8 ? "image/jpeg" : "image/png";
-            const extension = mimeType === "image/jpeg" ? "jpg" : "png";
+            // 2. 画像を生成（Nano Banana）
+            const imageBuffer = await generateSimpleImage(targetWord);
 
             // 3. Storage に保存
             const timestamp = Date.now();
-            const storagePath = `rooms/${roomId}/submissions/ai_participant_${timestamp}.${extension}`;
+            const storagePath = `rooms/${roomId}/submissions/ai_participant_${timestamp}.png`;
             const bucket = admin.storage().bucket();
             const file = bucket.file(storagePath);
 
             await file.save(imageBuffer, {
                 metadata: {
-                    contentType: mimeType,
+                    contentType: "image/png",
                 },
             });
 
