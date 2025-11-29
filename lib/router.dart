@@ -3,6 +3,7 @@ import 'package:tfh2025/pages/canvas_page.dart';
 import 'package:tfh2025/pages/final_result_page.dart';
 import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
+import 'package:tfh2025/pages/password_page.dart';
 import 'package:tfh2025/pages/room_entry_page.dart';
 import 'package:tfh2025/pages/theme_presentation_page.dart';
 import 'package:tfh2025/pages/top_page.dart';
@@ -18,6 +19,10 @@ final router = GoRouter(
     GoRoute(
       path: '/room_entry',
       builder: (context, state) => const RoomEntryPage(),
+    ),
+    GoRoute(
+      path: '/password',
+      builder: (context, state) => const PasswordPage(),
     ),
     GoRoute(
       path: '/waiting_room/:roomId',

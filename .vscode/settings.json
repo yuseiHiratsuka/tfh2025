@@ -53,5 +53,5 @@
     "**/.git": true,
     "**/node_modules": true
   },
-  "cSpell.words": ["cupertino", "firestore", "riverpod"]
+  "cSpell.words": ["cupertino", "firestore", "Nicomoji", "riverpod"]
 }

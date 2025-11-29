@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// ベースカラーをまとめておくことで配色の差し替えをしやすくする。
 class AppColors {
-  static const Color primary = Color.fromRGBO(174, 174, 29, 1);
-  static const Color secondary = Color.fromRGBO(245, 158, 11, 1);
+  static const Color primary = Color(0xFFCF00A9);
+  static const Color secondary = Color(0xFF00BCD9);
   static const Color surfaceLight = Colors.white;
   static const Color backgroundLight = Color(0xFFF6F7FB);
   static const Color surfaceDark = Color(0xFF111827);
@@ -12,8 +12,9 @@ class AppColors {
   static const Color onSurfaceLight = Color(0xFF1F2937); // ライトモード用（暗いグレー）
   static const Color onSurfaceDark = Colors.white; // ダークモード用（白）
   static const Color shadow = Color(0xFF301A6B);
-  static const Color backgroundStart = Color(0xFFCF00A9);
-  static const Color backgroundEnd = Color(0xFF00BCD9);
+  static const Color surfaceContainer = Color(0xFF002E80);
+  static const Color textBody = Colors.white;
+  static const Color onSurfaceVariant = Colors.white;
 }
 
 class AppTheme {
@@ -26,6 +27,8 @@ class AppTheme {
     error: AppColors.error,
     onSurface: AppColors.onSurfaceLight,
     shadow: AppColors.shadow,
+    surfaceContainer: AppColors.surfaceContainer,
+    onSurfaceVariant: AppColors.onSurfaceVariant,
   );
 
   static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
@@ -37,15 +40,23 @@ class AppTheme {
     error: AppColors.error,
     onSurface: AppColors.onSurfaceDark,
     shadow: AppColors.shadow,
+    surfaceContainer: AppColors.surfaceContainer,
+    onSurfaceVariant: AppColors.onSurfaceVariant,
   );
 
   static final ThemeData light = _theme(lightColorScheme);
   static final ThemeData dark = _theme(darkColorScheme);
 
   static ThemeData _theme(ColorScheme scheme) {
-    final textTheme = scheme.brightness == Brightness.dark
+    final baseTextTheme = scheme.brightness == Brightness.dark
         ? Typography.material2021().white
         : Typography.material2021().black;
+
+    final textTheme = baseTextTheme.copyWith(
+      titleMedium: const TextStyle(fontSize: 48),
+      bodyLarge: const TextStyle(fontSize: 28),
+      bodyMedium: const TextStyle(fontSize: 20),
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -57,8 +68,8 @@ class AppTheme {
         elevation: 0,
       ),
       textTheme: textTheme.apply(
-        displayColor: scheme.onSurface,
-        bodyColor: scheme.onSurface,
+        displayColor: AppColors.textBody,
+        bodyColor: AppColors.textBody,
         fontFamily: 'NicomojiPlus',
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -70,7 +81,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: scheme.surface,
           foregroundColor: scheme.shadow,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
           shape: StadiumBorder(
             side: BorderSide(width: 3, color: scheme.shadow),
           ),
@@ -82,18 +93,17 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: scheme.surface,
+        fillColor: scheme.surfaceContainer.withValues(alpha: 0.5),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 12,
+          horizontal: 24,
+          vertical: 22,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: scheme.outline),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: scheme.primary, width: 2),
+        hintStyle: textTheme.bodyLarge?.copyWith(
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
         ),
       ),
       cardTheme: CardThemeData(

@@ -24,10 +24,17 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'TFH 2025',
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
       routerConfig: router,
+      builder: (context, child) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: child,
+        );
+      },
     );
   }
 }
