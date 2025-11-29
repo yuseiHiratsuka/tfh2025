@@ -48,6 +48,7 @@
 
 **status の値:**
 - `waiting`: 参加者募集中
+- `presenting`: お題提示中（マスターが開始を押した後、全員準備完了待ち）
 - `playing`: ゲーム進行中
 - `success`: クリア
 - `failed`: 失敗（タイムアウトなど）
@@ -102,6 +103,40 @@
 }
 ```
 
+**お題提示時の例:**
+```json
+{
+  "id": "room123",
+  "createdAt": "2024-01-01T10:00:00Z",
+  "updatedAt": "2024-01-01T10:00:25Z",
+  "status": "presenting",
+  "failureReason": null,
+  
+  "startCharacter": "り",
+  "goalCharacter": "き",
+  "maxPlayers": 10,
+  "timeLimit": 120,
+  "startedAt": null,
+  
+  "currentCharacter": "り",
+  "currentSequence": 0,
+  "usedWords": [],
+  "chainCount": 0,
+  
+  "isGoalReached": false,
+  "goalReachedBy": null,
+  "finishedAt": null,
+  
+  "score": null,
+  "timeBonus": null,
+  "chainBonus": null,
+  
+  "totalSubmissions": 0,
+  "totalParticipants": 4,
+  "readyCount": 0
+}
+```
+
 **ゲーム開始時の例:**
 ```json
 {
@@ -131,7 +166,8 @@
   "chainBonus": null,
   
   "totalSubmissions": 0,
-  "totalParticipants": 4
+  "totalParticipants": 4,
+  "readyCount": 4
 }
 ```
 
@@ -250,6 +286,7 @@
 | joinedAt | Timestamp | ○ | 参加日時 | 2024-01-01 10:00:10 |
 | lastSubmittedAt | Timestamp \| null | ○ | 最後の投稿日時 | 2024-01-01 10:01:05 |
 | isReady | boolean | ○ | 準備完了フラグ | false |
+| isMaster | boolean | ○ | ルームマスターかどうか | false |
 
 **インデックス:**
 ```
@@ -265,7 +302,8 @@
   "avatarUrl": null,
   "joinedAt": "2024-01-01T10:00:10Z",
   "lastSubmittedAt": null,
-  "isReady": false
+  "isReady": false,
+  "isMaster": false
 }
 ```
 
@@ -276,7 +314,22 @@
   "displayName": "プレイヤー1234",
   "avatarUrl": null,
   "joinedAt": "2024-01-01T10:00:10Z",
-  "lastSubmittedAt": "2024-01-01T10:01:05Z"
+  "lastSubmittedAt": "2024-01-01T10:01:05Z",
+  "isReady": false,
+  "isMaster": false
+}
+```
+
+**マスター参加者の例:**
+```json
+{
+  "userId": "anonymous_xyz789",
+  "displayName": "マスター",
+  "avatarUrl": null,
+  "joinedAt": "2024-01-01T10:00:05Z",
+  "lastSubmittedAt": null,
+  "isReady": false,
+  "isMaster": true
 }
 ```
 
@@ -619,11 +672,16 @@
 ```
 1. クライアント
    ↓
+   参加者数を確認
+   isMaster = (totalParticipants == 0)  // 最初の参加者がマスター
+   ↓
    Firestore.collection('rooms/{roomId}/participants').doc(userId).set({
      userId: userId,
      displayName: displayName,
      joinedAt: Timestamp.now(),
-     lastSubmittedAt: null
+     lastSubmittedAt: null,
+     isReady: false,
+     isMaster: isMaster
    })
    
 2. /rooms/{roomId}/participants/{userId} ドキュメント作成完了
@@ -637,11 +695,20 @@
 4. /rooms/{roomId}.totalParticipants が +1
 ```
 
-### 4.3 準備完了とゲーム開始フロー
+### 4.3 お題提示と準備完了フロー
 
 ```
-1. クライアント（各参加者）
-   ↓ 準備ボタンを押す
+1. クライアント（マスター）
+   ↓ ゲーム開始ボタンを押す
+   Firestore.doc('rooms/{roomId}').update({
+     status: 'presenting',
+     readyCount: 0
+   })
+   ↓
+   全参加者のisReadyをfalseにリセット
+
+2. クライアント（各参加者）
+   ↓ お題提示画面で準備ボタンを押す
    Firestore.doc('rooms/{roomId}/participants/{userId}').update({
      isReady: true
    })
@@ -650,8 +717,7 @@
      readyCount: FieldValue.increment(1)
    })
 
-2. 全参加者が入室済み（totalParticipants == maxPlayers）
-   かつ readyCount == maxPlayers のとき
+3. 全参加者が準備完了（readyCount == totalParticipants）のとき
    ↓（トランザクション内で判定）
    Firestore.doc('rooms/{roomId}').update({
      status: 'playing',
@@ -659,19 +725,39 @@
    })
 ```
 
-### 4.4 ルーム開始更新（ホスト操作での直接開始を行う場合の補足）
+### 4.4 お題提示状態の例
 
-```
-1. クライアント（ホストまたは参加者）
-   ↓
-   Firestore.doc('rooms/{roomId}').update({
-     status: 'playing',
-     startedAt: Timestamp.now()
-   })
-   
-2. /rooms/{roomId} 更新完了
-   
-3. クライアント側でタイマー開始
+```json
+{
+  "id": "room123",
+  "createdAt": "2024-01-01T10:00:00Z",
+  "updatedAt": "2024-01-01T10:00:25Z",
+  "status": "presenting",
+  "failureReason": null,
+  
+  "startCharacter": "り",
+  "goalCharacter": "き",
+  "maxPlayers": 10,
+  "timeLimit": 120,
+  "startedAt": null,
+  
+  "currentCharacter": "り",
+  "currentSequence": 0,
+  "usedWords": [],
+  "chainCount": 0,
+  
+  "isGoalReached": false,
+  "goalReachedBy": null,
+  "finishedAt": null,
+  
+  "score": null,
+  "timeBonus": null,
+  "chainBonus": null,
+  
+  "totalSubmissions": 0,
+  "totalParticipants": 4,
+  "readyCount": 2
+}
 ```
 
 ### 4.5 投稿フロー
