@@ -65,6 +65,7 @@ void main() {
         joinedAt: DateTime(2024, 1, 1),
         isReady: false,
         isMaster: true,
+        isAI: false,
       );
       await firestore
           .collection('rooms')
@@ -120,6 +121,7 @@ void main() {
         'joinedAt': DateTime(2024, 1, 1),
         'isReady': isReady,
         'isMaster': false,
+        'isAI': false,
       });
     }
 
