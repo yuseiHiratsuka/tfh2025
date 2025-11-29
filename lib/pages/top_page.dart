@@ -39,7 +39,7 @@ class TopPage extends StatelessWidget {
                 child: const Text('はじめる'),
               ),
               ElevatedButton(
-                onPressed: () => context.go('/canvas'),
+                onPressed: () => context.go('/canvas?roomId=mock_room_001'),
                 child: const Text('キャンバスへ'),
               ),
             ],
