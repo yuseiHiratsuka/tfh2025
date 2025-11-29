@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tfh2025/canvas.dart';
+import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/models/participant.dart';
 import 'package:tfh2025/services/providers/firebase_providers.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
@@ -73,8 +73,6 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final authState = ref.watch(authStateProvider);
-    final colorScheme = Theme.of(context).colorScheme;
-    final roomId = _roomIdController.text.trim();
     final currentUserId =
         authState.value?.uid ?? ref.read(authRepositoryProvider).currentUserId;
     final participantsAsync =
@@ -95,102 +93,23 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('待機ルーム'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _roomIdController,
-              decoration: InputDecoration(
-                labelText: 'ルームID',
-                hintText: '既存のroomIdを入力',
-                filled: true,
-                fillColor: colorScheme.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 3),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _displayNameController,
-              decoration: InputDecoration(
-                labelText: '表示名',
-                hintText: 'プレイヤー名を入力',
-                filled: true,
-                fillColor: colorScheme.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 3),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _isJoining ? null : _joinRoom,
-                icon: _isJoining
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.login),
-                label: Text(_isJoining ? '参加中...' : 'ルームに参加'),
-              ),
-            ),
-            const Divider(height: 32),
-            Text(
-              '参加者一覧',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: participantsAsync.when(
-                data: (participants) {
-                  if (roomId.isEmpty) {
-                    return const Center(child: Text('ルームIDを入力してください'));
-                  }
-                  if (participants.isEmpty) {
-                    return const Center(child: Text('参加者はまだいません'));
-                  }
-                  Participant? selfParticipant;
-                  for (final participant in participants) {
-                    if (participant.userId == currentUserId) {
-                      selfParticipant = participant;
-                      break;
-                    }
-                  }
-                  final readyCount =
-                      participants.where((p) => p.isReady).length;
-                  final isSelfReady = selfParticipant?.isReady ?? false;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+      body: Background(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ヘッダー
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => context.go('/room_entry'),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '待機ルーム',
@@ -211,25 +130,186 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () => context.go('/theme_presentation'),
-                  child: const Text('お題提示画面へ'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (context) => const CanvasPage(),
-                      ),
+
+              // 参加者一覧
+              Expanded(
+                child: participantsAsync.when(
+                  data: (participants) {
+                    if (participants.isEmpty) {
+                      return const Center(
+                        child: Text('参加者はまだいません'),
+                      );
+                    }
+
+                    // 自分の参加者情報を取得
+                    Participant? selfParticipant;
+                    for (final participant in participants) {
+                      if (participant.userId == currentUserId) {
+                        selfParticipant = participant;
+                        break;
+                      }
+                    }
+
+                    return Column(
+                      children: [
+                        // 参加者数
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.people,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '参加者: ${participants.length}人',
+                                style: theme.textTheme.titleMedium,
+                              ),
+                              const Spacer(),
+                              roomAsync.when(
+                                data: (room) {
+                                  final data = room.data();
+                                  final maxPlayers = data?['maxPlayers'];
+                                  if (maxPlayers is int && maxPlayers > 0) {
+                                    return Text(
+                                      '(定員 $maxPlayers人)',
+                                      style:
+                                          theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                                error: (_, __) => const SizedBox.shrink(),
+                                loading: () => const SizedBox.shrink(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // 参加者リスト
+                        Expanded(
+                          child: ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: participants.length,
+                            itemBuilder: (context, index) {
+                              final participant = participants[index];
+                              final isMe = participant.userId == currentUserId;
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: participant.isMaster
+                                        ? Colors.amber
+                                        : theme.colorScheme.primaryContainer,
+                                    child: Icon(
+                                      participant.isMaster
+                                          ? Icons.star
+                                          : Icons.person,
+                                      color: participant.isMaster
+                                          ? Colors.white
+                                          : theme
+                                              .colorScheme.onPrimaryContainer,
+                                    ),
+                                  ),
+                                  title: Row(
+                                    children: [
+                                      Text(
+                                        participant.displayName,
+                                        style: TextStyle(
+                                          fontWeight: isMe
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                      if (isMe) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.primary,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Text(
+                                            'あなた',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color:
+                                                  theme.colorScheme.onPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      if (participant.isMaster) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.amber,
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: const Text(
+                                            'マスター',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        // ボタンエリア
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          child: selfParticipant?.isMaster == true
+                              ? _buildMasterButton(theme)
+                              : _buildWaitingButton(theme),
+                        ),
+                      ],
                     );
                   },
-                  child: const Text('キャンバス画面へ'),
+                  error: (error, _) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text('エラー: $error'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => context.go('/room_entry'),
+                          child: const Text('戻る'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
               ),
             ],
