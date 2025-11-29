@@ -28,6 +28,10 @@ mixin _$Participant {
   @JsonKey(defaultValue: false)
   bool get isReady;
 
+  /// ルームマスターかどうか
+  @JsonKey(defaultValue: false)
+  bool get isMaster;
+
   /// アバター画像URL
   String? get avatarUrl;
 
@@ -56,6 +60,8 @@ mixin _$Participant {
             (identical(other.joinedAt, joinedAt) ||
                 other.joinedAt == joinedAt) &&
             (identical(other.isReady, isReady) || other.isReady == isReady) &&
+            (identical(other.isMaster, isMaster) ||
+                other.isMaster == isMaster) &&
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.lastSubmittedAt, lastSubmittedAt) ||
@@ -65,11 +71,11 @@ mixin _$Participant {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, userId, displayName, joinedAt,
-      isReady, avatarUrl, lastSubmittedAt);
+      isReady, isMaster, avatarUrl, lastSubmittedAt);
 
   @override
   String toString() {
-    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, isMaster: $isMaster, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
   }
 }
 
@@ -84,6 +90,7 @@ abstract mixin class $ParticipantCopyWith<$Res> {
       String displayName,
       @TimestampConverter() DateTime joinedAt,
       @JsonKey(defaultValue: false) bool isReady,
+      @JsonKey(defaultValue: false) bool isMaster,
       String? avatarUrl,
       @NullableTimestampConverter() DateTime? lastSubmittedAt});
 }
@@ -104,6 +111,7 @@ class _$ParticipantCopyWithImpl<$Res> implements $ParticipantCopyWith<$Res> {
     Object? displayName = null,
     Object? joinedAt = null,
     Object? isReady = null,
+    Object? isMaster = null,
     Object? avatarUrl = freezed,
     Object? lastSubmittedAt = freezed,
   }) {
@@ -123,6 +131,10 @@ class _$ParticipantCopyWithImpl<$Res> implements $ParticipantCopyWith<$Res> {
       isReady: null == isReady
           ? _self.isReady
           : isReady // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isMaster: null == isMaster
+          ? _self.isMaster
+          : isMaster // ignore: cast_nullable_to_non_nullable
               as bool,
       avatarUrl: freezed == avatarUrl
           ? _self.avatarUrl
@@ -234,6 +246,7 @@ extension ParticipantPatterns on Participant {
             String displayName,
             @TimestampConverter() DateTime joinedAt,
             @JsonKey(defaultValue: false) bool isReady,
+            @JsonKey(defaultValue: false) bool isMaster,
             String? avatarUrl,
             @NullableTimestampConverter() DateTime? lastSubmittedAt)?
         $default, {
@@ -242,8 +255,14 @@ extension ParticipantPatterns on Participant {
     final _that = this;
     switch (_that) {
       case _Participant() when $default != null:
-        return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
+        return $default(
+            _that.userId,
+            _that.displayName,
+            _that.joinedAt,
+            _that.isReady,
+            _that.isMaster,
+            _that.avatarUrl,
+            _that.lastSubmittedAt);
       case _:
         return orElse();
     }
@@ -269,6 +288,7 @@ extension ParticipantPatterns on Participant {
             String displayName,
             @TimestampConverter() DateTime joinedAt,
             @JsonKey(defaultValue: false) bool isReady,
+            @JsonKey(defaultValue: false) bool isMaster,
             String? avatarUrl,
             @NullableTimestampConverter() DateTime? lastSubmittedAt)
         $default,
@@ -276,8 +296,14 @@ extension ParticipantPatterns on Participant {
     final _that = this;
     switch (_that) {
       case _Participant():
-        return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
+        return $default(
+            _that.userId,
+            _that.displayName,
+            _that.joinedAt,
+            _that.isReady,
+            _that.isMaster,
+            _that.avatarUrl,
+            _that.lastSubmittedAt);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -302,6 +328,7 @@ extension ParticipantPatterns on Participant {
             String displayName,
             @TimestampConverter() DateTime joinedAt,
             @JsonKey(defaultValue: false) bool isReady,
+            @JsonKey(defaultValue: false) bool isMaster,
             String? avatarUrl,
             @NullableTimestampConverter() DateTime? lastSubmittedAt)?
         $default,
@@ -309,8 +336,14 @@ extension ParticipantPatterns on Participant {
     final _that = this;
     switch (_that) {
       case _Participant() when $default != null:
-        return $default(_that.userId, _that.displayName, _that.joinedAt,
-            _that.isReady, _that.avatarUrl, _that.lastSubmittedAt);
+        return $default(
+            _that.userId,
+            _that.displayName,
+            _that.joinedAt,
+            _that.isReady,
+            _that.isMaster,
+            _that.avatarUrl,
+            _that.lastSubmittedAt);
       case _:
         return null;
     }
@@ -325,6 +358,7 @@ class _Participant extends Participant {
       required this.displayName,
       @TimestampConverter() required this.joinedAt,
       @JsonKey(defaultValue: false) required this.isReady,
+      @JsonKey(defaultValue: false) required this.isMaster,
       this.avatarUrl,
       @NullableTimestampConverter() this.lastSubmittedAt})
       : super._();
@@ -348,6 +382,11 @@ class _Participant extends Participant {
   @override
   @JsonKey(defaultValue: false)
   final bool isReady;
+
+  /// ルームマスターかどうか
+  @override
+  @JsonKey(defaultValue: false)
+  final bool isMaster;
 
   /// アバター画像URL
   @override
@@ -384,6 +423,8 @@ class _Participant extends Participant {
             (identical(other.joinedAt, joinedAt) ||
                 other.joinedAt == joinedAt) &&
             (identical(other.isReady, isReady) || other.isReady == isReady) &&
+            (identical(other.isMaster, isMaster) ||
+                other.isMaster == isMaster) &&
             (identical(other.avatarUrl, avatarUrl) ||
                 other.avatarUrl == avatarUrl) &&
             (identical(other.lastSubmittedAt, lastSubmittedAt) ||
@@ -393,11 +434,11 @@ class _Participant extends Participant {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, userId, displayName, joinedAt,
-      isReady, avatarUrl, lastSubmittedAt);
+      isReady, isMaster, avatarUrl, lastSubmittedAt);
 
   @override
   String toString() {
-    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
+    return 'Participant(userId: $userId, displayName: $displayName, joinedAt: $joinedAt, isReady: $isReady, isMaster: $isMaster, avatarUrl: $avatarUrl, lastSubmittedAt: $lastSubmittedAt)';
   }
 }
 
@@ -414,6 +455,7 @@ abstract mixin class _$ParticipantCopyWith<$Res>
       String displayName,
       @TimestampConverter() DateTime joinedAt,
       @JsonKey(defaultValue: false) bool isReady,
+      @JsonKey(defaultValue: false) bool isMaster,
       String? avatarUrl,
       @NullableTimestampConverter() DateTime? lastSubmittedAt});
 }
@@ -434,6 +476,7 @@ class __$ParticipantCopyWithImpl<$Res> implements _$ParticipantCopyWith<$Res> {
     Object? displayName = null,
     Object? joinedAt = null,
     Object? isReady = null,
+    Object? isMaster = null,
     Object? avatarUrl = freezed,
     Object? lastSubmittedAt = freezed,
   }) {
@@ -453,6 +496,10 @@ class __$ParticipantCopyWithImpl<$Res> implements _$ParticipantCopyWith<$Res> {
       isReady: null == isReady
           ? _self.isReady
           : isReady // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isMaster: null == isMaster
+          ? _self.isMaster
+          : isMaster // ignore: cast_nullable_to_non_nullable
               as bool,
       avatarUrl: freezed == avatarUrl
           ? _self.avatarUrl

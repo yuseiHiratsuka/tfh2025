@@ -9,7 +9,8 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF111827);
   static const Color backgroundDark = Color(0xFF0B1220);
   static const Color error = Color(0xFFDC2626);
-  static const Color onSurface = Colors.white;
+  static const Color onSurfaceLight = Color(0xFF1F2937); // ライトモード用（暗いグレー）
+  static const Color onSurfaceDark = Colors.white; // ダークモード用（白）
   static const Color backgroundStart = Color(0xFFCF00A9);
   static const Color backgroundEnd = Color(0xFF00BCD9);
 }
@@ -22,7 +23,7 @@ class AppTheme {
     secondary: AppColors.secondary,
     surface: AppColors.surfaceLight,
     error: AppColors.error,
-    onSurface: AppColors.onSurface,
+    onSurface: AppColors.onSurfaceLight,
   );
 
   static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
@@ -32,7 +33,7 @@ class AppTheme {
     secondary: AppColors.secondary,
     surface: AppColors.surfaceDark,
     error: AppColors.error,
-    onSurface: AppColors.onSurface,
+    onSurface: AppColors.onSurfaceDark,
   );
 
   static final ThemeData light = _theme(lightColorScheme);

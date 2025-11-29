@@ -9,6 +9,9 @@ enum RoomStatus {
   /// 参加者募集中
   waiting,
 
+  /// お題提示中（マスターが開始を押した後、全員準備完了待ち）
+  presenting,
+
   /// ゲーム進行中
   playing,
 

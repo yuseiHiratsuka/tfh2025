@@ -18,6 +18,7 @@ class ParticipantRepository {
   final AuthRepository _authRepository;
 
   /// 参加フロー: 参加者ドキュメントを作成し、ルームの totalParticipants をインクリメント
+  /// 最初の参加者はマスターになる
   Future<Participant> joinRoom({
     required String roomId,
     required String displayName,
@@ -31,34 +32,47 @@ class ParticipantRepository {
       final user = await _authRepository.signInAnonymouslyIfNeeded();
       debugPrint('[ParticipantRepository] 認証成功: userId=${user.uid}');
 
-      final participant = Participant.initial(
-        userId: user.uid,
-        displayName: displayName,
-        avatarUrl: avatarUrl,
-      );
-      debugPrint(
-        '[ParticipantRepository] Participant作成完了: ${participant.toJson()}',
-      );
-
       final roomRef = _firestore.collection('rooms').doc(roomId);
       final participantRef = roomRef.collection('participants').doc(user.uid);
-      debugPrint('[ParticipantRepository] Firestore参照作成完了');
+
+      late Participant participant;
 
       debugPrint('[ParticipantRepository] トランザクション開始');
       await _firestore.runTransaction((transaction) async {
         final participantSnap = await transaction.get(participantRef);
         if (participantSnap.exists) {
           debugPrint('[ParticipantRepository] 既に参加済みです');
-          // 既に参加済みなら何もしない
+          participant = Participant.fromJson(participantSnap.data()!);
           return;
         }
 
         final roomSnap = await transaction.get(roomRef);
         if (!roomSnap.exists) {
-          debugPrint('[ParticipantRepository] エラー: ルームが見つかりません roomId=$roomId');
+          debugPrint(
+            '[ParticipantRepository] エラー: ルームが見つかりません roomId=$roomId',
+          );
           throw StateError('ルームが見つかりません (roomId: $roomId)');
         }
         debugPrint('[ParticipantRepository] ルーム確認完了');
+
+        // 現在の参加者数を取得して、0人なら最初の参加者（マスター）
+        final roomData = roomSnap.data()!;
+        final totalParticipants = roomData.getInt('totalParticipants');
+        final isMaster = totalParticipants == 0;
+
+        debugPrint(
+          '[ParticipantRepository] totalParticipants=$totalParticipants, isMaster=$isMaster',
+        );
+
+        participant = Participant.initial(
+          userId: user.uid,
+          displayName: displayName,
+          avatarUrl: avatarUrl,
+          isMaster: isMaster,
+        );
+        debugPrint(
+          '[ParticipantRepository] Participant作成完了: ${participant.toJson()}',
+        );
 
         transaction.set(participantRef, participant.toJson());
         transaction.update(
@@ -75,6 +89,65 @@ class ParticipantRepository {
       debugPrint('[ParticipantRepository] スタックトレース: $stackTrace');
       rethrow;
     }
+  }
+
+  /// マスターがお題提示を開始する（ステータスをpresentingに変更）
+  Future<void> startPresentation({required String roomId}) async {
+    debugPrint('[ParticipantRepository] startPresentation: roomId=$roomId');
+    final user = await _authRepository.signInAnonymouslyIfNeeded();
+
+    final roomRef = _firestore.collection('rooms').doc(roomId);
+    final participantRef = roomRef.collection('participants').doc(user.uid);
+
+    // トランザクションでステータスを変更
+    await _firestore.runTransaction((transaction) async {
+      // 参加者がマスターかどうか確認
+      final participantSnap = await transaction.get(participantRef);
+      if (!participantSnap.exists) {
+        throw StateError('まずルームに参加してください');
+      }
+
+      final participant = Participant.fromJson(participantSnap.data()!);
+      if (!participant.isMaster) {
+        throw StateError('マスターのみがゲームを開始できます');
+      }
+
+      // ルームのステータスを確認
+      final roomSnap = await transaction.get(roomRef);
+      if (!roomSnap.exists) {
+        throw StateError('ルームが見つかりません (roomId: $roomId)');
+      }
+
+      final roomData = roomSnap.data()!;
+      final status = roomData['status'] as String?;
+      debugPrint('[ParticipantRepository] 現在のステータス: $status');
+
+      if (status != 'waiting') {
+        throw StateError('ゲームは既に開始されています');
+      }
+
+      // ステータスをpresentingに変更
+      transaction.update(
+        roomRef,
+        {
+          'status': 'presenting',
+          'readyCount': 0,
+          'updatedAt': DateTime.now(),
+        },
+      );
+      debugPrint('[ParticipantRepository] ステータスをpresentingに変更');
+    });
+
+    // バッチ処理で全参加者のisReadyをリセット
+    final participantsSnap = await roomRef.collection('participants').get();
+    final batch = _firestore.batch();
+    for (final doc in participantsSnap.docs) {
+      batch.update(doc.reference, {'isReady': false});
+    }
+    await batch.commit();
+    debugPrint(
+      '[ParticipantRepository] startPresentation: 成功 (${participantsSnap.docs.length}人のisReadyをリセット)',
+    );
   }
 
   /// 参加者一覧（参加順）のストリーム
@@ -220,7 +293,6 @@ extension ParticipantRepositoryReady on ParticipantRepository {
       final roomData = roomSnap.data()!;
       final readyCount = roomData.getInt('readyCount');
       final totalParticipants = roomData.getInt('totalParticipants');
-      final maxPlayers = roomData.getInt('maxPlayers');
       final status = roomData['status'] as String?;
 
       // 準備状態更新
@@ -233,11 +305,14 @@ extension ParticipantRepositoryReady on ParticipantRepository {
         },
       );
 
-      // 全員揃って準備完了ならゲーム開始
+      // お題提示中（presenting）で全員揃って準備完了ならゲーム開始
       final nextReadyCount = readyCount + (isReady ? 1 : -1);
-      final canStart = status == 'waiting' &&
-          totalParticipants >= maxPlayers &&
-          nextReadyCount >= maxPlayers;
+      final canStart =
+          status == 'presenting' && nextReadyCount >= totalParticipants;
+
+      debugPrint(
+        '[ParticipantRepository] setReadyStatus: status=$status, nextReadyCount=$nextReadyCount, totalParticipants=$totalParticipants, canStart=$canStart',
+      );
 
       if (canStart) {
         debugPrint('[ParticipantRepository] 条件を満たしたのでゲーム開始に遷移');

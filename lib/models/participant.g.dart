@@ -11,6 +11,7 @@ _Participant _$ParticipantFromJson(Map<String, dynamic> json) => _Participant(
       displayName: json['displayName'] as String,
       joinedAt: const TimestampConverter().fromJson(json['joinedAt']),
       isReady: json['isReady'] as bool? ?? false,
+      isMaster: json['isMaster'] as bool? ?? false,
       avatarUrl: json['avatarUrl'] as String?,
       lastSubmittedAt:
           const NullableTimestampConverter().fromJson(json['lastSubmittedAt']),
@@ -22,6 +23,7 @@ Map<String, dynamic> _$ParticipantToJson(_Participant instance) =>
       'displayName': instance.displayName,
       'joinedAt': const TimestampConverter().toJson(instance.joinedAt),
       'isReady': instance.isReady,
+      'isMaster': instance.isMaster,
       'avatarUrl': instance.avatarUrl,
       'lastSubmittedAt':
           const NullableTimestampConverter().toJson(instance.lastSubmittedAt),

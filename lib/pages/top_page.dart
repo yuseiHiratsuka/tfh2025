@@ -33,7 +33,7 @@ class TopPage extends StatelessWidget {
                 ),
               ),
               ElevatedButton(
-                onPressed: () => context.go('/waiting_room'),
+                onPressed: () => context.go('/room_entry'),
                 child: const Text('はじめる'),
               ),
             ],
