@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as img;
+import 'package:tfh2025/models/submission.dart';
 
 import '../providers/firebase_providers.dart';
 import 'auth_repository.dart';
@@ -141,6 +142,29 @@ class SubmissionRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  /// 特定の投稿ドキュメントを監視する
+  Stream<Submission?> watchSubmission({
+    required String roomId,
+    required String submissionId,
+  }) {
+    return _firestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('submissions')
+        .doc(submissionId)
+        .snapshots()
+        .map((doc) {
+      final data = doc.data();
+      if (data == null) return null;
+      try {
+        return Submission.fromJson(data);
+      } catch (e) {
+        debugPrint('[SubmissionRepository] watchSubmission parse error: $e');
+        return null;
+      }
     });
   }
 }
