@@ -38,7 +38,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   Timer? _countdownTimer;
   static const _initialSeconds = 120;
   int _secondsLeft = _initialSeconds;
-  late final PainterController _controller;
+  late PainterController _controller;
   bool _isSubmitting = false;
   Room? _lastRoom;
   bool _isCanvasInteracting = false;
@@ -60,7 +60,15 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   @override
   void initState() {
     super.initState();
-    _controller = PainterController(
+    _controller = _createPainterController();
+    _startCountdown();
+    if (_riveEnabled) {
+      _loadButtonRiveFile();
+    }
+  }
+
+  PainterController _createPainterController() {
+    return PainterController(
       settings: const PainterSettings(
         freeStyle: FreeStyleSettings(
           mode: FreeStyleMode.draw,
@@ -69,10 +77,12 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       ),
       background: const ColorBackgroundDrawable(color: Colors.white),
     );
-    _startCountdown();
-    if (_riveEnabled) {
-      _loadButtonRiveFile();
-    }
+  }
+
+  void _resetPainterController() {
+    _controller.dispose();
+    _controller = _createPainterController();
+    setState(() {});
   }
 
   Future<void> _loadButtonRiveFile() async {
@@ -367,7 +377,10 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) {
-                      showGeneralDialog<void>(
+                      // ダイアログ表示中にキャンバスが操作不能になるのを防ぐため、
+                      // 表示前後でインタラクションフラグをリセットしておく
+                      setState(() => _isCanvasInteracting = false);
+                      final dialogFuture = showGeneralDialog<void>(
                         context: context,
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             ScaleTransition(
@@ -380,6 +393,13 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                           ),
                         ),
                       );
+                      dialogFuture.then((_) {
+                        if (mounted) {
+                          setState(() => _isCanvasInteracting = false);
+                          // ダイアログ終了後にキャンバスが描けなくなる場合の保険としてコントローラを再生成
+                          _resetPainterController();
+                        }
+                      });
                     }
                   });
                 });
@@ -581,8 +601,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
             _buildSubmitButton(),
           ],
         ),
-        if (_pendingSubmissionIds.isNotEmpty)
-          const _SubmissionPendingNotice(),
+        if (_pendingSubmissionIds.isNotEmpty) const _SubmissionPendingNotice(),
       ],
     );
   }
@@ -648,14 +667,8 @@ class _SubmissionPendingNotice extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.75),
-                Theme.of(context)
-                    .colorScheme
-                    .primary
-                    .withValues(alpha: 0.45),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
               ],
             ),
           ),
