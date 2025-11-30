@@ -18,23 +18,6 @@ class MockDataSeeder {
     final now = DateTime.now();
     final roomRef = _firestore.collection('rooms').doc(roomId);
 
-    // ルームデータ作成
-    final room = Room.initial(
-      id: roomId,
-      startCharacter: 'みゃくみゃく',
-      goalCharacter: 'きつねうどん',
-    ).copyWith(
-      status: RoomStatus.success,
-      score: 8500,
-      chainCount: 4,
-      startedAt: now.subtract(const Duration(minutes: 2)),
-      finishedAt: now,
-      totalParticipants: 2,
-      totalSubmissions: 2,
-    );
-
-    await roomRef.set(room.toJson());
-
     // 参加者データ作成
     final participants = [
       Participant.initial(
@@ -46,15 +29,6 @@ class MockDataSeeder {
         displayName: 'サル',
       ).copyWith(joinedAt: now.subtract(const Duration(minutes: 3))),
     ];
-
-    final batch = _firestore.batch();
-
-    for (final p in participants) {
-      batch.set(
-        roomRef.collection('participants').doc(p.userId),
-        p.toJson(),
-      );
-    }
 
     // 投稿データ作成
     final submissions = [
@@ -147,6 +121,32 @@ class MockDataSeeder {
         ),
       ),
     ];
+
+    // ルームデータ作成
+    final room = Room.initial(
+      id: roomId,
+      startCharacter: 'みゃくみゃく',
+      goalCharacter: 'きつねうどん',
+    ).copyWith(
+      status: RoomStatus.success,
+      score: 8500,
+      chainCount: 4,
+      startedAt: now.subtract(const Duration(minutes: 2)),
+      finishedAt: now,
+      totalParticipants: participants.length,
+      totalSubmissions: submissions.length,
+    );
+
+    await roomRef.set(room.toJson());
+
+    final batch = _firestore.batch();
+
+    for (final p in participants) {
+      batch.set(
+        roomRef.collection('participants').doc(p.userId),
+        p.toJson(),
+      );
+    }
 
     for (final s in submissions) {
       batch.set(
