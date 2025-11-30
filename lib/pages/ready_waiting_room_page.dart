@@ -7,6 +7,7 @@ import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/services/providers/firebase_providers.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
+import 'package:tfh2025/utils/rive_support.dart';
 
 final _roomStreamProvider =
     StreamProvider.family<DocumentSnapshot<Map<String, dynamic>>, String>(
@@ -33,6 +34,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
   bool _hasNavigatedToGame = false;
   File? _riveFile;
   RiveWidgetController? _controller;
+  bool _riveEnabled = isRiveSupported;
 
   @override
   void initState() {
@@ -40,21 +42,30 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
-    _loadRiveFile();
+    if (_riveEnabled) {
+      _loadRiveFile();
+    }
   }
 
   Future<void> _loadRiveFile() async {
     try {
-      _riveFile = await File.asset(
-        'assets/rive/character.riv',
-        riveFactory: Factory.rive,
-      );
-      if (_riveFile != null) {
-        _controller = RiveWidgetController(_riveFile!);
-        setState(() {});
+      final riveFile =
+          await loadRiveFileIfSupported('assets/rive/character.riv');
+      if (!mounted) return;
+      if (riveFile == null) {
+        setState(() {
+          _riveEnabled = false;
+        });
+        return;
       }
+      _riveFile = riveFile;
+      _controller = RiveWidgetController(_riveFile!);
+      setState(() {});
     } catch (e) {
       // Riveファイルの読み込みに失敗してもエラーを表示しない
+      setState(() {
+        _riveEnabled = false;
+      });
     }
   }
 
@@ -96,7 +107,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
         _hasNavigatedToGame = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.go('/game_start/${widget.roomId}');
+            context.go('/canvas?roomId=${widget.roomId}');
           }
         });
       }
@@ -143,11 +154,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
 
               // Riveアニメーション
               Expanded(
-                child: _controller == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : RiveWidget(
-                        controller: _controller!,
-                      ),
+                child: _buildRiveOrFallback(),
               ),
 
               // 説明テキスト
@@ -169,6 +176,26 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRiveOrFallback() {
+    if (_riveEnabled && _controller != null) {
+      return RiveWidget(
+        controller: _controller!,
+      );
+    }
+
+    if (_riveEnabled) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return const Center(
+      child: Icon(
+        Icons.hourglass_empty,
+        color: Colors.white,
+        size: 64,
       ),
     );
   }

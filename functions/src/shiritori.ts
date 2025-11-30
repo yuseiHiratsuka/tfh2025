@@ -5,6 +5,18 @@ export type ShiritoriValidationResult = {
 };
 
 /**
+ * カタカナをひらがなに変換する
+ * @param str 変換する文字列
+ * @return ひらがなに変換された文字列
+ */
+function katakanaToHiragana(str: string): string {
+    return str.replace(/[\u30a1-\u30f6]/g, (match) => {
+        const chr = match.charCodeAt(0) - 0x60;
+        return String.fromCharCode(chr);
+    });
+}
+
+/**
  * しりとり判定ヘルパー関数
  * @param currentChar 現在の文字
  * @param firstChar 提出された単語の最初の文字
@@ -24,8 +36,14 @@ export function validateShiritori(
     chainCount: number,
     goalCharacter: string
 ): ShiritoriValidationResult {
+    // カタカナをひらがなに正規化
+    const normalizedCurrentChar = katakanaToHiragana(currentChar);
+    const normalizedFirstChar = katakanaToHiragana(firstChar);
+    const normalizedLastChar = katakanaToHiragana(lastChar);
+    const normalizedGoalCharacter = katakanaToHiragana(goalCharacter);
+
     // しりとりチェック: 現在の文字と一致するか
-    if (currentChar !== firstChar) {
+    if (normalizedCurrentChar !== normalizedFirstChar) {
         return {
             isValid: false,
             reasonCode: "start_char_mismatch",
@@ -43,7 +61,7 @@ export function validateShiritori(
     }
 
     // 「ん」禁止ルール（ゴール文字が「ん」の場合を除く）
-    if (lastChar === "ん" && goalCharacter !== "ん") {
+    if (normalizedLastChar === "ん" && normalizedGoalCharacter !== "ん") {
         return {
             isValid: false,
             reasonCode: "ends_with_n",
@@ -52,7 +70,7 @@ export function validateShiritori(
     }
 
     // 最低ターン数ルール（3ターン未満でゴール到達不可）
-    if (chainCount < 2 && lastChar === goalCharacter) {
+    if (chainCount < 2 && normalizedLastChar === normalizedGoalCharacter) {
         return {
             isValid: false,
             reasonCode: "min_turns_not_reached",

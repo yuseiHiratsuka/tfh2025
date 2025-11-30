@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
@@ -16,6 +17,7 @@ import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
+import 'package:tfh2025/utils/rive_support.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
 class CanvasPage extends ConsumerStatefulWidget {
@@ -31,6 +33,8 @@ class CanvasPage extends ConsumerStatefulWidget {
 }
 
 class _CanvasPageState extends ConsumerState<CanvasPage> {
+  final cacheStrategy = AsyncCache<void>.ephemeral();
+
   Timer? _countdownTimer;
   static const _initialSeconds = 120;
   int _secondsLeft = _initialSeconds;
@@ -41,6 +45,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   File? _buttonRiveFile;
   RiveWidgetController? _buttonController;
   String? _lastCurrentCharacter;
+  bool _riveEnabled = isRiveSupported;
   final Set<String> _pendingSubmissionIds = {};
   final Map<String, ProviderSubscription<AsyncValue<Submission?>>>
       _submissionWatchSubscriptions = {};
@@ -65,18 +70,23 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       background: const ColorBackgroundDrawable(color: Colors.white),
     );
     _startCountdown();
-    _loadButtonRiveFile();
+    if (_riveEnabled) {
+      _loadButtonRiveFile();
+    }
   }
 
   Future<void> _loadButtonRiveFile() async {
-    _buttonRiveFile = await File.asset(
-      'assets/rive/button.riv',
-      riveFactory: Factory.rive,
-    );
-    if (_buttonRiveFile != null) {
-      _buttonController = RiveWidgetController(_buttonRiveFile!);
-      setState(() {});
+    final riveFile = await loadRiveFileIfSupported('assets/rive/button.riv');
+    if (!mounted) return;
+    if (riveFile == null) {
+      setState(() {
+        _riveEnabled = false;
+      });
+      return;
     }
+    _buttonRiveFile = riveFile;
+    _buttonController = RiveWidgetController(_buttonRiveFile!);
+    setState(() {});
   }
 
   @override
@@ -330,12 +340,12 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     ref.listen<AsyncValue<List<Submission>>>(
       allSubmissionsStreamProvider(roomId),
       (previous, next) {
+        next.whenData(_resolvePendingFromCompleted);
+
+        // 初回読み込みではダイアログを表示しない
+        if (previous == null) return;
+
         next.whenData((submissions) {
-          _resolvePendingFromCompleted(submissions);
-
-          // 初回読み込みではダイアログを表示しない
-          if (previous == null) return;
-
           previous.whenData((prevSubmissions) {
             // 新しい投稿が追加された場合のみ
             if (submissions.length > prevSubmissions.length) {
@@ -568,27 +578,59 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
               },
             ),
             const SizedBox(height: 26),
-            GestureDetector(
-              onTap: _isSubmitting ? null : _submitDrawing,
-              child: _buttonController == null
-                  ? const SizedBox(
-                      width: double.infinity,
-                      height: 460,
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: RiveWidget(
-                        controller: _buttonController!,
-                        fit: Fit.cover,
-                      ),
-                    ),
-            ),
+            _buildSubmitButton(),
           ],
         ),
-        if (_pendingSubmissionIds.isNotEmpty) const _SubmissionPendingNotice(),
+        if (_pendingSubmissionIds.isNotEmpty)
+          const _SubmissionPendingNotice(),
       ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    if (_riveEnabled && _buttonController != null) {
+      return GestureDetector(
+        onTap: _isSubmitting
+            ? null
+            : () async {
+                await AsyncCache<void>.ephemeral().fetch(() async {
+                  await _submitDrawing();
+                });
+              },
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: RiveWidget(
+            controller: _buttonController!,
+            fit: Fit.cover,
+          ),
+        ),
+      );
+    }
+
+    if (_riveEnabled) {
+      return const SizedBox(
+        width: double.infinity,
+        height: 80,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isSubmitting ? null : _submitDrawing,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: const Text(
+          '送信する',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -606,8 +648,14 @@ class _SubmissionPendingNotice extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
-                Theme.of(context).colorScheme.secondary.withValues(alpha: 0.45),
+                Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.75),
+                Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.45),
               ],
             ),
           ),

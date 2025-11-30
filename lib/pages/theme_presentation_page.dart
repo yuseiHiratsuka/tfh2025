@@ -87,7 +87,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -100,7 +100,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text(
                     'スタートのお題から絵しりとりを始めよう！\n2分以内にゴールのお題にたどり着け！',
                     textAlign: TextAlign.center,
@@ -109,7 +109,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // お題情報の表示
                   roomAsync.when(
@@ -128,7 +128,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                             label: 'スタートのお題',
                             content: startCharacter,
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 20),
                           _buildThemeCard(
                             label: 'ゴールのお題',
                             content: goalCharacter,
@@ -140,7 +140,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                     loading: () => const CircularProgressIndicator(),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // 準備状況
                   participantsAsync.when(
@@ -153,48 +153,53 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
                         }
                       }
 
-                      // final readyCount =
-                      //     participants.where((p) => p.isReady).length;
+                      final readyCount =
+                          participants.where((p) => p.isReady).length;
                       final isSelfReady = selfParticipant?.isReady ?? false;
+                      final buttonColor = isSelfReady
+                          ? Colors.grey
+                          : theme.colorScheme.primary;
 
                       return Column(
                         children: [
-                          // 準備状況バー (非表示)
-                          // Container(
-                          //   padding: const EdgeInsets.symmetric(
-                          //     horizontal: 16,
-                          //     vertical: 12,
-                          //   ),
-                          //   decoration: BoxDecoration(
-                          //     color: theme.colorScheme.surfaceContainerHighest,
-                          //     borderRadius: BorderRadius.circular(12),
-                          //   ),
-                          //   child: Row(
-                          //     mainAxisAlignment: MainAxisAlignment.center,
-                          //     children: [
-                          //       Icon(
-                          //         Icons.people,
-                          //         color: theme.colorScheme.primary,
-                          //       ),
-                          //       const SizedBox(width: 8),
-                          //       Text(
-                          //         '準備完了: $readyCount / ${participants.length}',
-                          //         style: theme.textTheme.titleMedium,
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
-                          // const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.people,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '準備完了: $readyCount / ${participants.length}',
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
                           // 準備完了ボタン
                           SizedBox(
                             width: double.infinity,
-                            height: 64,
+                            height: 56,
                             child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: buttonColor,
+                              ),
                               onPressed: () =>
                                   _toggleReady(nextReady: !isSelfReady),
                               child: Text(
-                                isSelfReady ? '待機中...' : 'おぼえた！',
+                                isSelfReady ? '準備解除' : '準備完了',
                               ),
                             ),
                           ),
@@ -267,7 +272,7 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: const Color(0xFF5D2E8E),
             borderRadius: BorderRadius.circular(16),

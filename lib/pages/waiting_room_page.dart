@@ -1,10 +1,10 @@
+import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/models/participant.dart';
-import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/providers/firebase_providers.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
@@ -33,7 +33,8 @@ class WaitingRoomPage extends ConsumerStatefulWidget {
 
 class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
   bool _hasNavigatedToPresentation = false;
-  final bool _isStarting = false;
+
+  final cacheStrategy = AsyncCache<void>.ephemeral();
 
   @override
   void initState() {
@@ -45,10 +46,6 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
 
   /// マスターがゲーム開始ボタンを押した時の処理
   Future<void> _startGame() async {
-    if (_isStarting) return;
-
-    ref.read(loadingProvider.notifier).show();
-
     try {
       await ref.read(participantRepositoryProvider).startPresentation(
             roomId: widget.roomId,
@@ -61,8 +58,6 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
           SnackBar(content: Text('ゲーム開始に失敗しました: $e')),
         );
       }
-    } finally {
-      if (mounted) ref.read(loadingProvider.notifier).hide();
     }
   }
 
@@ -240,7 +235,11 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: _isStarting ? () {} : _startGame,
+        onPressed: () async {
+          await cacheStrategy.fetch(() async {
+            await _startGame();
+          });
+        },
         child: const Text(
           'ゲーム開始',
         ),

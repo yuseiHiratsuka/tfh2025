@@ -120,7 +120,7 @@ class _HeaderInfoPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: const Color(0xFF37002E).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white30),
       ),
@@ -163,7 +163,7 @@ class _FinalResultSliverAppBar extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         expandedTitleScale: 1.0,
         background: Container(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [AppColors.primary, AppColors.secondary],
@@ -177,6 +177,7 @@ class _FinalResultSliverAppBar extends StatelessWidget {
             border: Border(
               bottom: BorderSide(
                 color: Color(0xFF301A6B),
+                width: 4,
               ),
             ),
           ),
@@ -199,12 +200,12 @@ class _FinalResultSliverAppBar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: const Color(0xFF37002E).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white30),
                 ),
@@ -391,16 +392,16 @@ class _AIIntroBubble extends StatelessWidget {
                   children: [
                     Text(
                       'スタート：「${room.startCharacter}」',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       'ゴール：「${room.goalCharacter}」',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -594,7 +595,6 @@ class _FinalResultFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -614,9 +614,8 @@ class _FinalResultFooter extends StatelessWidget {
               ),
             ),
           ),
-          child: Text(
+          child: const Text(
             'ホームへ',
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
       ),

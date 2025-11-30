@@ -1,13 +1,14 @@
+import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rive/rive.dart';
 import 'package:tfh2025/components/background.dart';
-import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
+import 'package:tfh2025/utils/rive_support.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
   const PasswordPage({required this.isCreateMode, super.key});
@@ -23,6 +24,7 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
   late final TextEditingController _displayNameController;
   File? _riveFile;
   RiveWidgetController? _controller;
+  bool _riveEnabled = isRiveSupported;
 
   @override
   void initState() {
@@ -32,18 +34,24 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
-    _loadRiveFile();
+    if (_riveEnabled) {
+      _loadRiveFile();
+    }
   }
 
   Future<void> _loadRiveFile() async {
-    _riveFile = await File.asset(
-      'assets/rive/happy_meeple.riv',
-      riveFactory: Factory.rive,
-    );
-    if (_riveFile != null) {
-      _controller = RiveWidgetController(_riveFile!);
-      setState(() {});
+    final riveFile =
+        await loadRiveFileIfSupported('assets/rive/happy_meeple.riv');
+    if (!mounted) return;
+    if (riveFile == null) {
+      setState(() {
+        _riveEnabled = false;
+      });
+      return;
     }
+    _riveFile = riveFile;
+    _controller = RiveWidgetController(_riveFile!);
+    setState(() {});
   }
 
   @override
@@ -72,8 +80,6 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
       }
       return;
     }
-
-    ref.read(loadingProvider.notifier).show();
 
     try {
       String roomId;
@@ -132,8 +138,6 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
           SnackBar(content: Text('$errorMessage: $e')),
         );
       }
-    } finally {
-      ref.read(loadingProvider.notifier).hide();
     }
   }
 
@@ -145,6 +149,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
         ? '新しいルームを作成します。\n「あいことば」を決めてください。'
         : '入力した「あいことば」のルームに\n参加します。';
     final buttonText = widget.isCreateMode ? 'ルームを作成' : 'ルームに参加';
+
+    final cacheStrategy = AsyncCache<void>.ephemeral();
 
     return Scaffold(
       body: Background(
@@ -167,11 +173,7 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
             // Riveアニメーション
             SizedBox(
               height: 150,
-              child: _controller == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : RiveWidget(
-                      controller: _controller!,
-                    ),
+              child: _buildRiveOrFallback(),
             ),
             const SizedBox(height: 24),
             TextFormField(
@@ -193,14 +195,33 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
-                ref.read(loadingProvider) ? null : _handleSubmit();
+              onPressed: () async {
+                await cacheStrategy.fetch(() async {
+                  await _handleSubmit();
+                });
               },
               child: Text(buttonText),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRiveOrFallback() {
+    if (_riveEnabled && _controller != null) {
+      return RiveWidget(
+        controller: _controller!,
+      );
+    }
+
+    if (_riveEnabled) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return const Image(
+      image: AssetImage('assets/images/robot.png'),
+      fit: BoxFit.contain,
     );
   }
 }
