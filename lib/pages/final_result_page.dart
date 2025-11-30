@@ -400,7 +400,7 @@ class _AIIntroBubble extends StatelessWidget {
                     Text(
                       'ゴール：「${room.goalCharacter}」',
                       style: textTheme.bodyMedium?.copyWith(
-                        color: Color(0xFF301A6B),
+                        color: const Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -594,7 +594,6 @@ class _FinalResultFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -615,7 +614,7 @@ class _FinalResultFooter extends StatelessWidget {
             ),
           ),
           child: const Text(
-            'ホームへ'
+            'ホームへ',
           ),
         ),
       ),
