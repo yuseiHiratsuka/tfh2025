@@ -597,7 +597,6 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                 );
               },
             ),
-            const SizedBox(height: 26),
             _buildSubmitButton(),
           ],
         ),
@@ -618,10 +617,13 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
               },
         child: SizedBox(
           width: double.infinity,
-          height: 50,
-          child: RiveWidget(
-            controller: _buttonController!,
-            fit: Fit.cover,
+          height: 130,
+          child: Transform.scale(
+            scale: 1.6,
+            child: RiveWidget(
+              controller: _buttonController!,
+              fit: Fit.fill,
+            ),
           ),
         ),
       );
