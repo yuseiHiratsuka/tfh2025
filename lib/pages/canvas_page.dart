@@ -750,7 +750,7 @@ class _TopicCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer.withValues(alpha: 0.4),
+        color: theme.colorScheme.onSecondaryContainer.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
