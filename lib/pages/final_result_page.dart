@@ -614,9 +614,8 @@ class _FinalResultFooter extends StatelessWidget {
               ),
             ),
           ),
-          child: Text(
-            'ホームへ',
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          child: const Text(
+            'ホームへ'
           ),
         ),
       ),
