@@ -597,7 +597,6 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                 );
               },
             ),
-            const SizedBox(height: 26),
             _buildSubmitButton(),
           ],
         ),
@@ -608,20 +607,21 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
   Widget _buildSubmitButton() {
     if (_riveEnabled && _buttonController != null) {
-      return GestureDetector(
-        onTap: _isSubmitting
-            ? null
-            : () async {
-                await AsyncCache<void>.ephemeral().fetch(() async {
-                  await _submitDrawing();
-                });
-              },
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerUp: (_) async {
+          if (_isSubmitting) return;
+          await _submitDrawing();
+        },
         child: SizedBox(
           width: double.infinity,
-          height: 50,
-          child: RiveWidget(
-            controller: _buttonController!,
-            fit: Fit.cover,
+          height: 130,
+          child: Transform.scale(
+            scale: 1.6,
+            child: RiveWidget(
+              controller: _buttonController!,
+              fit: Fit.fill,
+            ),
           ),
         ),
       );
