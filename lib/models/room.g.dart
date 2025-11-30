@@ -8,7 +8,6 @@ part of 'room.dart';
 
 _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
       id: json['id'] as String,
-      password: json['password'] as String?,
       createdAt: const TimestampConverter().fromJson(json['createdAt']),
       updatedAt: const TimestampConverter().fromJson(json['updatedAt']),
       status: $enumDecode(_$RoomStatusEnumMap, json['status']),
@@ -25,6 +24,7 @@ _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
       totalSubmissions: (json['totalSubmissions'] as num).toInt(),
       totalParticipants: (json['totalParticipants'] as num).toInt(),
       readyCount: (json['readyCount'] as num?)?.toInt() ?? 0,
+      password: json['password'] as String?,
       failureReason:
           $enumDecodeNullable(_$FailureReasonEnumMap, json['failureReason']),
       startedAt: const NullableTimestampConverter().fromJson(json['startedAt']),
@@ -34,11 +34,11 @@ _Room _$RoomFromJson(Map<String, dynamic> json) => _Room(
       score: (json['score'] as num?)?.toInt(),
       timeBonus: (json['timeBonus'] as num?)?.toInt(),
       chainBonus: (json['chainBonus'] as num?)?.toInt(),
+      remainingTime: (json['remainingTime'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$RoomToJson(_Room instance) => <String, dynamic>{
       'id': instance.id,
-      'password': instance.password,
       'createdAt': const TimestampConverter().toJson(instance.createdAt),
       'updatedAt': const TimestampConverter().toJson(instance.updatedAt),
       'status': _$RoomStatusEnumMap[instance.status]!,
@@ -54,6 +54,7 @@ Map<String, dynamic> _$RoomToJson(_Room instance) => <String, dynamic>{
       'totalSubmissions': instance.totalSubmissions,
       'totalParticipants': instance.totalParticipants,
       'readyCount': instance.readyCount,
+      'password': instance.password,
       'failureReason': _$FailureReasonEnumMap[instance.failureReason],
       'startedAt':
           const NullableTimestampConverter().toJson(instance.startedAt),
@@ -63,6 +64,7 @@ Map<String, dynamic> _$RoomToJson(_Room instance) => <String, dynamic>{
       'score': instance.score,
       'timeBonus': instance.timeBonus,
       'chainBonus': instance.chainBonus,
+      'remainingTime': instance.remainingTime,
     };
 
 const _$RoomStatusEnumMap = {

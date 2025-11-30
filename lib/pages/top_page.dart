@@ -55,7 +55,7 @@ class _TopPageState extends State<TopPage> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Image.asset(
-                        'assets/image/title.png',
+                        'assets/images/title.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -76,7 +76,7 @@ class _TopPageState extends State<TopPage> {
                   HapticFeedback.heavyImpact();
                   await Future<void>.delayed(const Duration(seconds: 2));
                   if (context.mounted) {
-                    context.go('/room_entry');
+                    context.push('/room_entry');
                   }
                 },
                 child: _startButtonController == null

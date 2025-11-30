@@ -128,6 +128,21 @@ class SubmissionRepository {
       return snapshot.docs.map((doc) => doc.data()).toList();
     });
   }
+
+  /// 全ての投稿一覧（検証済み）のストリーム
+  Stream<List<Map<String, dynamic>>> watchAllSubmissions(String roomId) {
+    return _firestore
+        .collection('rooms')
+        .doc(roomId)
+        .collection('submissions')
+        .where('status', isEqualTo: 'completed')
+        .where('validation', isNull: false)
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
 }
 
 /// SubmissionRepository プロバイダー

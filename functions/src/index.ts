@@ -218,6 +218,7 @@ export const validateAndAdoptSubmission = functions
                     roomUpdate.score = totalScore;
                     roomUpdate.timeBonus = timeBonus;
                     roomUpdate.chainBonus = chainBonus;
+                    roomUpdate.remainingTime = remainingTime;
                 }
 
                 transaction.update(roomRef, roomUpdate);

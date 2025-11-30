@@ -17,9 +17,6 @@ mixin _$Room {
   /// ドキュメントID
   String get id;
 
-  /// 合言葉（ルーム検索用）
-  String? get password;
-
   /// 作成日時
   @TimestampConverter()
   DateTime get createdAt;
@@ -68,6 +65,9 @@ mixin _$Room {
   @JsonKey(defaultValue: 0)
   int get readyCount;
 
+  /// 合言葉（ルーム検索用）
+  String? get password;
+
   /// 失敗理由
   FailureReason? get failureReason;
 
@@ -91,6 +91,9 @@ mixin _$Room {
   /// チェーンボーナス
   int? get chainBonus;
 
+  /// 残り時間（秒）
+  int? get remainingTime;
+
   /// Create a copy of Room
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -107,8 +110,6 @@ mixin _$Room {
         (other.runtimeType == runtimeType &&
             other is Room &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -137,6 +138,8 @@ mixin _$Room {
                 other.totalParticipants == totalParticipants) &&
             (identical(other.readyCount, readyCount) ||
                 other.readyCount == readyCount) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
             (identical(other.failureReason, failureReason) ||
                 other.failureReason == failureReason) &&
             (identical(other.startedAt, startedAt) ||
@@ -149,7 +152,9 @@ mixin _$Room {
             (identical(other.timeBonus, timeBonus) ||
                 other.timeBonus == timeBonus) &&
             (identical(other.chainBonus, chainBonus) ||
-                other.chainBonus == chainBonus));
+                other.chainBonus == chainBonus) &&
+            (identical(other.remainingTime, remainingTime) ||
+                other.remainingTime == remainingTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -157,7 +162,6 @@ mixin _$Room {
   int get hashCode => Object.hashAll([
         runtimeType,
         id,
-        password,
         createdAt,
         updatedAt,
         status,
@@ -173,18 +177,20 @@ mixin _$Room {
         totalSubmissions,
         totalParticipants,
         readyCount,
+        password,
         failureReason,
         startedAt,
         goalReachedBy,
         finishedAt,
         score,
         timeBonus,
-        chainBonus
+        chainBonus,
+        remainingTime
       ]);
 
   @override
   String toString() {
-    return 'Room(id: $id, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, password: $password, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus, remainingTime: $remainingTime)';
   }
 }
 
@@ -195,7 +201,6 @@ abstract mixin class $RoomCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      String? password,
       @TimestampConverter() DateTime createdAt,
       @TimestampConverter() DateTime updatedAt,
       RoomStatus status,
@@ -211,13 +216,15 @@ abstract mixin class $RoomCopyWith<$Res> {
       int totalSubmissions,
       int totalParticipants,
       @JsonKey(defaultValue: 0) int readyCount,
+      String? password,
       FailureReason? failureReason,
       @NullableTimestampConverter() DateTime? startedAt,
       String? goalReachedBy,
       @NullableTimestampConverter() DateTime? finishedAt,
       int? score,
       int? timeBonus,
-      int? chainBonus});
+      int? chainBonus,
+      int? remainingTime});
 }
 
 /// @nodoc
@@ -233,7 +240,6 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
   @override
   $Res call({
     Object? id = null,
-    Object? password = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? status = null,
@@ -249,6 +255,7 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
     Object? totalSubmissions = null,
     Object? totalParticipants = null,
     Object? readyCount = null,
+    Object? password = freezed,
     Object? failureReason = freezed,
     Object? startedAt = freezed,
     Object? goalReachedBy = freezed,
@@ -256,16 +263,13 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
     Object? score = freezed,
     Object? timeBonus = freezed,
     Object? chainBonus = freezed,
+    Object? remainingTime = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      password: freezed == password
-          ? _self.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -326,6 +330,10 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
           ? _self.readyCount
           : readyCount // ignore: cast_nullable_to_non_nullable
               as int,
+      password: freezed == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String?,
       failureReason: freezed == failureReason
           ? _self.failureReason
           : failureReason // ignore: cast_nullable_to_non_nullable
@@ -353,6 +361,10 @@ class _$RoomCopyWithImpl<$Res> implements $RoomCopyWith<$Res> {
       chainBonus: freezed == chainBonus
           ? _self.chainBonus
           : chainBonus // ignore: cast_nullable_to_non_nullable
+              as int?,
+      remainingTime: freezed == remainingTime
+          ? _self.remainingTime
+          : remainingTime // ignore: cast_nullable_to_non_nullable
               as int?,
     ));
   }
@@ -453,7 +465,6 @@ extension RoomPatterns on Room {
   TResult maybeWhen<TResult extends Object?>(
     TResult Function(
             String id,
-            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -469,13 +480,15 @@ extension RoomPatterns on Room {
             int totalSubmissions,
             int totalParticipants,
             @JsonKey(defaultValue: 0) int readyCount,
+            String? password,
             FailureReason? failureReason,
             @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
             @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
-            int? chainBonus)?
+            int? chainBonus,
+            int? remainingTime)?
         $default, {
     required TResult orElse(),
   }) {
@@ -484,7 +497,6 @@ extension RoomPatterns on Room {
       case _Room() when $default != null:
         return $default(
             _that.id,
-            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -500,13 +512,15 @@ extension RoomPatterns on Room {
             _that.totalSubmissions,
             _that.totalParticipants,
             _that.readyCount,
+            _that.password,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
             _that.finishedAt,
             _that.score,
             _that.timeBonus,
-            _that.chainBonus);
+            _that.chainBonus,
+            _that.remainingTime);
       case _:
         return orElse();
     }
@@ -529,7 +543,6 @@ extension RoomPatterns on Room {
   TResult when<TResult extends Object?>(
     TResult Function(
             String id,
-            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -545,13 +558,15 @@ extension RoomPatterns on Room {
             int totalSubmissions,
             int totalParticipants,
             @JsonKey(defaultValue: 0) int readyCount,
+            String? password,
             FailureReason? failureReason,
             @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
             @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
-            int? chainBonus)
+            int? chainBonus,
+            int? remainingTime)
         $default,
   ) {
     final _that = this;
@@ -559,7 +574,6 @@ extension RoomPatterns on Room {
       case _Room():
         return $default(
             _that.id,
-            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -575,13 +589,15 @@ extension RoomPatterns on Room {
             _that.totalSubmissions,
             _that.totalParticipants,
             _that.readyCount,
+            _that.password,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
             _that.finishedAt,
             _that.score,
             _that.timeBonus,
-            _that.chainBonus);
+            _that.chainBonus,
+            _that.remainingTime);
       case _:
         throw StateError('Unexpected subclass');
     }
@@ -603,7 +619,6 @@ extension RoomPatterns on Room {
   TResult? whenOrNull<TResult extends Object?>(
     TResult? Function(
             String id,
-            String? password,
             @TimestampConverter() DateTime createdAt,
             @TimestampConverter() DateTime updatedAt,
             RoomStatus status,
@@ -619,13 +634,15 @@ extension RoomPatterns on Room {
             int totalSubmissions,
             int totalParticipants,
             @JsonKey(defaultValue: 0) int readyCount,
+            String? password,
             FailureReason? failureReason,
             @NullableTimestampConverter() DateTime? startedAt,
             String? goalReachedBy,
             @NullableTimestampConverter() DateTime? finishedAt,
             int? score,
             int? timeBonus,
-            int? chainBonus)?
+            int? chainBonus,
+            int? remainingTime)?
         $default,
   ) {
     final _that = this;
@@ -633,7 +650,6 @@ extension RoomPatterns on Room {
       case _Room() when $default != null:
         return $default(
             _that.id,
-            _that.password,
             _that.createdAt,
             _that.updatedAt,
             _that.status,
@@ -649,13 +665,15 @@ extension RoomPatterns on Room {
             _that.totalSubmissions,
             _that.totalParticipants,
             _that.readyCount,
+            _that.password,
             _that.failureReason,
             _that.startedAt,
             _that.goalReachedBy,
             _that.finishedAt,
             _that.score,
             _that.timeBonus,
-            _that.chainBonus);
+            _that.chainBonus,
+            _that.remainingTime);
       case _:
         return null;
     }
@@ -667,7 +685,6 @@ extension RoomPatterns on Room {
 class _Room extends Room {
   const _Room(
       {required this.id,
-      this.password,
       @TimestampConverter() required this.createdAt,
       @TimestampConverter() required this.updatedAt,
       required this.status,
@@ -683,13 +700,15 @@ class _Room extends Room {
       required this.totalSubmissions,
       required this.totalParticipants,
       @JsonKey(defaultValue: 0) required this.readyCount,
+      this.password,
       this.failureReason,
       @NullableTimestampConverter() this.startedAt,
       this.goalReachedBy,
       @NullableTimestampConverter() this.finishedAt,
       this.score,
       this.timeBonus,
-      this.chainBonus})
+      this.chainBonus,
+      this.remainingTime})
       : _usedWords = usedWords,
         super._();
   factory _Room.fromJson(Map<String, dynamic> json) => _$RoomFromJson(json);
@@ -697,10 +716,6 @@ class _Room extends Room {
   /// ドキュメントID
   @override
   final String id;
-
-  /// 合言葉（ルーム検索用）
-  @override
-  final String? password;
 
   /// 作成日時
   @override
@@ -772,6 +787,10 @@ class _Room extends Room {
   @JsonKey(defaultValue: 0)
   final int readyCount;
 
+  /// 合言葉（ルーム検索用）
+  @override
+  final String? password;
+
   /// 失敗理由
   @override
   final FailureReason? failureReason;
@@ -802,6 +821,10 @@ class _Room extends Room {
   @override
   final int? chainBonus;
 
+  /// 残り時間（秒）
+  @override
+  final int? remainingTime;
+
   /// Create a copy of Room
   /// with the given fields replaced by the non-null parameter values.
   @override
@@ -823,8 +846,6 @@ class _Room extends Room {
         (other.runtimeType == runtimeType &&
             other is _Room &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -854,6 +875,8 @@ class _Room extends Room {
                 other.totalParticipants == totalParticipants) &&
             (identical(other.readyCount, readyCount) ||
                 other.readyCount == readyCount) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
             (identical(other.failureReason, failureReason) ||
                 other.failureReason == failureReason) &&
             (identical(other.startedAt, startedAt) ||
@@ -866,7 +889,9 @@ class _Room extends Room {
             (identical(other.timeBonus, timeBonus) ||
                 other.timeBonus == timeBonus) &&
             (identical(other.chainBonus, chainBonus) ||
-                other.chainBonus == chainBonus));
+                other.chainBonus == chainBonus) &&
+            (identical(other.remainingTime, remainingTime) ||
+                other.remainingTime == remainingTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -874,7 +899,6 @@ class _Room extends Room {
   int get hashCode => Object.hashAll([
         runtimeType,
         id,
-        password,
         createdAt,
         updatedAt,
         status,
@@ -890,18 +914,20 @@ class _Room extends Room {
         totalSubmissions,
         totalParticipants,
         readyCount,
+        password,
         failureReason,
         startedAt,
         goalReachedBy,
         finishedAt,
         score,
         timeBonus,
-        chainBonus
+        chainBonus,
+        remainingTime
       ]);
 
   @override
   String toString() {
-    return 'Room(id: $id, password: $password, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus)';
+    return 'Room(id: $id, createdAt: $createdAt, updatedAt: $updatedAt, status: $status, startCharacter: $startCharacter, goalCharacter: $goalCharacter, maxPlayers: $maxPlayers, timeLimit: $timeLimit, currentCharacter: $currentCharacter, currentSequence: $currentSequence, usedWords: $usedWords, chainCount: $chainCount, isGoalReached: $isGoalReached, totalSubmissions: $totalSubmissions, totalParticipants: $totalParticipants, readyCount: $readyCount, password: $password, failureReason: $failureReason, startedAt: $startedAt, goalReachedBy: $goalReachedBy, finishedAt: $finishedAt, score: $score, timeBonus: $timeBonus, chainBonus: $chainBonus, remainingTime: $remainingTime)';
   }
 }
 
@@ -913,7 +939,6 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      String? password,
       @TimestampConverter() DateTime createdAt,
       @TimestampConverter() DateTime updatedAt,
       RoomStatus status,
@@ -929,13 +954,15 @@ abstract mixin class _$RoomCopyWith<$Res> implements $RoomCopyWith<$Res> {
       int totalSubmissions,
       int totalParticipants,
       @JsonKey(defaultValue: 0) int readyCount,
+      String? password,
       FailureReason? failureReason,
       @NullableTimestampConverter() DateTime? startedAt,
       String? goalReachedBy,
       @NullableTimestampConverter() DateTime? finishedAt,
       int? score,
       int? timeBonus,
-      int? chainBonus});
+      int? chainBonus,
+      int? remainingTime});
 }
 
 /// @nodoc
@@ -951,7 +978,6 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
   @pragma('vm:prefer-inline')
   $Res call({
     Object? id = null,
-    Object? password = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
     Object? status = null,
@@ -967,6 +993,7 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
     Object? totalSubmissions = null,
     Object? totalParticipants = null,
     Object? readyCount = null,
+    Object? password = freezed,
     Object? failureReason = freezed,
     Object? startedAt = freezed,
     Object? goalReachedBy = freezed,
@@ -974,16 +1001,13 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
     Object? score = freezed,
     Object? timeBonus = freezed,
     Object? chainBonus = freezed,
+    Object? remainingTime = freezed,
   }) {
     return _then(_Room(
       id: null == id
           ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      password: freezed == password
-          ? _self.password
-          : password // ignore: cast_nullable_to_non_nullable
-              as String?,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -1044,6 +1068,10 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
           ? _self.readyCount
           : readyCount // ignore: cast_nullable_to_non_nullable
               as int,
+      password: freezed == password
+          ? _self.password
+          : password // ignore: cast_nullable_to_non_nullable
+              as String?,
       failureReason: freezed == failureReason
           ? _self.failureReason
           : failureReason // ignore: cast_nullable_to_non_nullable
@@ -1071,6 +1099,10 @@ class __$RoomCopyWithImpl<$Res> implements _$RoomCopyWith<$Res> {
       chainBonus: freezed == chainBonus
           ? _self.chainBonus
           : chainBonus // ignore: cast_nullable_to_non_nullable
+              as int?,
+      remainingTime: freezed == remainingTime
+          ? _self.remainingTime
+          : remainingTime // ignore: cast_nullable_to_non_nullable
               as int?,
     ));
   }

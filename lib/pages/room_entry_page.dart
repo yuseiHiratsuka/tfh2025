@@ -35,7 +35,7 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => context.go('/password?create=true'),
+              onPressed: () => context.push('/password?create=true'),
               child: const Text('「新しいルーム」を作成'),
             ),
             const SizedBox(height: 40),
@@ -52,7 +52,7 @@ class _RoomEntryPageState extends ConsumerState<RoomEntryPage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => context.go('/password'),
+              onPressed: () => context.push('/password'),
               child: const Text('「あいことば」を入力'),
             ),
           ],
