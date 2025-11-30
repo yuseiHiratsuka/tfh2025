@@ -207,9 +207,10 @@ export const validateAndAdoptSubmission = functions
                     }
 
                     // スコア計算: 残り時間(秒数) x 50点 + 絵が繋がった回数 x 1000点
+                    // 残り時間が0の場合は常にスコアを0にする
                     const timeBonus = remainingTime * 50;
                     const chainBonus = newChainCount * 1000;
-                    const totalScore = timeBonus + chainBonus;
+                    const totalScore = remainingTime === 0 ? 0 : timeBonus + chainBonus;
 
                     roomUpdate.status = "success";
                     roomUpdate.isGoalReached = true;
