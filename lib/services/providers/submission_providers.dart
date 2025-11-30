@@ -19,3 +19,15 @@ final allSubmissionsStreamProvider =
         (list) => list.map((data) => Submission.fromJson(data)).toList(),
       );
 });
+
+/// 特定の投稿を監視するプロバイダー
+final submissionStreamProvider = StreamProvider.autoDispose
+    .family<Submission?, ({String roomId, String submissionId})>(
+  (ref, params) {
+    final repository = ref.watch(submissionRepositoryProvider);
+    return repository.watchSubmission(
+      roomId: params.roomId,
+      submissionId: params.submissionId,
+    );
+  },
+);

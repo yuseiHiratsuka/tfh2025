@@ -38,7 +38,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   Timer? _countdownTimer;
   static const _initialSeconds = 120;
   int _secondsLeft = _initialSeconds;
-  late final PainterController _controller;
+  late PainterController _controller;
   bool _isSubmitting = false;
   Room? _lastRoom;
   bool _isCanvasInteracting = false;
@@ -46,6 +46,9 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   RiveWidgetController? _buttonController;
   String? _lastCurrentCharacter;
   bool _riveEnabled = isRiveSupported;
+  final Set<String> _pendingSubmissionIds = {};
+  final Map<String, ProviderSubscription<AsyncValue<Submission?>>>
+      _submissionWatchSubscriptions = {};
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -57,7 +60,15 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   @override
   void initState() {
     super.initState();
-    _controller = PainterController(
+    _controller = _createPainterController();
+    _startCountdown();
+    if (_riveEnabled) {
+      _loadButtonRiveFile();
+    }
+  }
+
+  PainterController _createPainterController() {
+    return PainterController(
       settings: const PainterSettings(
         freeStyle: FreeStyleSettings(
           mode: FreeStyleMode.draw,
@@ -66,10 +77,12 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       ),
       background: const ColorBackgroundDrawable(color: Colors.white),
     );
-    _startCountdown();
-    if (_riveEnabled) {
-      _loadButtonRiveFile();
-    }
+  }
+
+  void _resetPainterController() {
+    _controller.dispose();
+    _controller = _createPainterController();
+    setState(() {});
   }
 
   Future<void> _loadButtonRiveFile() async {
@@ -92,6 +105,10 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     _controller.dispose();
     _buttonController?.dispose();
     _buttonRiveFile?.dispose();
+    for (final subscription in _submissionWatchSubscriptions.values) {
+      subscription.close();
+    }
+    _submissionWatchSubscriptions.clear();
     super.dispose();
   }
 
@@ -113,6 +130,70 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   void _setMode(FreeStyleMode mode) {
     _controller.freeStyleSettings =
         _controller.freeStyleSettings.copyWith(mode: mode);
+  }
+
+  void _handleNewSubmission(String submissionId) {
+    if (!mounted) return;
+    setState(() {
+      _pendingSubmissionIds.add(submissionId);
+    });
+    _trackSubmissionStatus(submissionId);
+  }
+
+  void _trackSubmissionStatus(String submissionId) {
+    final roomId = widget.roomId;
+    if (roomId == null || roomId.isEmpty) return;
+
+    _submissionWatchSubscriptions[submissionId]?.close();
+    final provider = submissionStreamProvider(
+      (roomId: roomId, submissionId: submissionId),
+    );
+    final subscription =
+        ref.listenManual<AsyncValue<Submission?>>(provider, (previous, next) {
+      if (next.hasError) {
+        _resolvePendingSubmission(submissionId);
+        return;
+      }
+
+      next.whenData((submission) {
+        if (submission == null) {
+          _resolvePendingSubmission(submissionId);
+          return;
+        }
+        final status = submission.status;
+        final isResolved = status != SubmissionStatus.processing ||
+            submission.aiResult != null ||
+            submission.validation != null;
+        if (isResolved) {
+          _resolvePendingSubmission(submissionId);
+        }
+      });
+    });
+
+    _submissionWatchSubscriptions[submissionId] = subscription;
+  }
+
+  void _resolvePendingFromCompleted(List<Submission> submissions) {
+    if (_pendingSubmissionIds.isEmpty) return;
+
+    final completedIds = submissions
+        .map((submission) => submission.id)
+        .where(_pendingSubmissionIds.contains)
+        .toList();
+
+    if (completedIds.isEmpty) return;
+
+    for (final id in completedIds) {
+      _resolvePendingSubmission(id);
+    }
+  }
+
+  void _resolvePendingSubmission(String submissionId) {
+    _submissionWatchSubscriptions.remove(submissionId)?.close();
+    final removed = _pendingSubmissionIds.remove(submissionId);
+    if (removed && mounted) {
+      setState(() {});
+    }
   }
 
   void _setColor(Color color) {
@@ -211,11 +292,13 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       final size = _getCanvasSize();
       final captured = await _captureBytes(size);
       final displayName = await _resolveDisplayName(roomId);
-      await ref.read(submissionRepositoryProvider).submitImageBytes(
-            roomId: roomId,
-            displayName: displayName,
-            rawBytes: captured,
-          );
+      final submissionId =
+          await ref.read(submissionRepositoryProvider).submitImageBytes(
+                roomId: roomId,
+                displayName: displayName,
+                rawBytes: captured,
+              );
+      _handleNewSubmission(submissionId);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -267,6 +350,8 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     ref.listen<AsyncValue<List<Submission>>>(
       allSubmissionsStreamProvider(roomId),
       (previous, next) {
+        next.whenData(_resolvePendingFromCompleted);
+
         // 初回読み込みではダイアログを表示しない
         if (previous == null) return;
 
@@ -292,7 +377,10 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) {
-                      showGeneralDialog<void>(
+                      // ダイアログ表示中にキャンバスが操作不能になるのを防ぐため、
+                      // 表示前後でインタラクションフラグをリセットしておく
+                      setState(() => _isCanvasInteracting = false);
+                      final dialogFuture = showGeneralDialog<void>(
                         context: context,
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             ScaleTransition(
@@ -305,6 +393,13 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                           ),
                         ),
                       );
+                      dialogFuture.then((_) {
+                        if (mounted) {
+                          setState(() => _isCanvasInteracting = false);
+                          // ダイアログ終了後にキャンバスが描けなくなる場合の保険としてコントローラを再生成
+                          _resetPainterController();
+                        }
+                      });
                     }
                   });
                 });
@@ -369,139 +464,144 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     final currentTopic = room.currentCharacter;
     final previousDrawing = room.usedWords.isEmpty ? '-' : room.usedWords.last;
 
-    return ListView(
-      physics: _isCanvasInteracting
-          ? const NeverScrollableScrollPhysics()
-          : const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+    return Stack(
       children: [
-        const SizedBox(height: 12),
-        Row(
+        ListView(
+          physics: _isCanvasInteracting
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
-            Expanded(
-              child: _InfoChip(
-                label: 'ゴールのお題',
-                value: goalTopic,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: _InfoChip(
-                  label: '制限時間',
-                  value: 'あと$_secondsLeft秒',
-                  leading: const CircleAvatar(
-                    radius: 16,
-                    backgroundImage: AssetImage('assets/images/robot.png'),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        Text(
-          '現在のお題',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
-        ),
-        const SizedBox(height: 8),
-        _TopicCard(
-          value: currentTopic,
-          previousDrawing: previousDrawing,
-        ),
-        const SizedBox(height: 12),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final controls = _PainterControls(
-              controller: _controller,
-              palette: _palette,
-              onModeChanged: _setMode,
-              onColorPicked: _setColor,
-              onStrokeChanged: _setStroke,
-            );
-            final clearButton = OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              onPressed: _onClearCanvas,
-              child: const Text('キャンバスをクリア'),
-            );
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(height: 12),
+            Row(
               children: [
-                clearButton,
                 Expanded(
-                  child: controls,
-                ),
-              ],
-            );
-          },
-        ),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final canvasWidth = math.min(constraints.maxWidth, 520.0);
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: SizedBox(
-                width: canvasWidth,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(22),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                  child: _InfoChip(
+                    label: 'ゴールのお題',
+                    value: goalTopic,
                   ),
-                  padding: const EdgeInsets.all(8),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: const Color(0xFF2E207A),
-                        width: 6,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _InfoChip(
+                      label: '制限時間',
+                      value: 'あと$_secondsLeft秒',
+                      leading: const CircleAvatar(
+                        radius: 16,
+                        backgroundImage: AssetImage('assets/images/robot.png'),
                       ),
                     ),
-                    child: AspectRatio(
-                      aspectRatio: 1,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Listener(
-                          onPointerDown: (_) =>
-                              setState(() => _isCanvasInteracting = true),
-                          onPointerUp: (_) =>
-                              setState(() => _isCanvasInteracting = false),
-                          onPointerCancel: (_) =>
-                              setState(() => _isCanvasInteracting = false),
-                          child: FlutterPainter(controller: _controller),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '現在のお題',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            _TopicCard(
+              value: currentTopic,
+              previousDrawing: previousDrawing,
+            ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final controls = _PainterControls(
+                  controller: _controller,
+                  palette: _palette,
+                  onModeChanged: _setMode,
+                  onColorPicked: _setColor,
+                  onStrokeChanged: _setStroke,
+                );
+                final clearButton = OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: _onClearCanvas,
+                  child: const Text('キャンバスをクリア'),
+                );
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    clearButton,
+                    Expanded(
+                      child: controls,
+                    ),
+                  ],
+                );
+              },
+            ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final canvasWidth = math.min(constraints.maxWidth, 520.0);
+                return Align(
+                  alignment: Alignment.centerLeft,
+                  child: SizedBox(
+                    width: canvasWidth,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFF2E207A),
+                            width: 6,
+                          ),
+                        ),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Listener(
+                              onPointerDown: (_) =>
+                                  setState(() => _isCanvasInteracting = true),
+                              onPointerUp: (_) =>
+                                  setState(() => _isCanvasInteracting = false),
+                              onPointerCancel: (_) =>
+                                  setState(() => _isCanvasInteracting = false),
+                              child: FlutterPainter(controller: _controller),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+            const SizedBox(height: 26),
+            _buildSubmitButton(),
+          ],
         ),
-        const SizedBox(height: 26),
-        _buildSubmitButton(),
+        if (_pendingSubmissionIds.isNotEmpty) const _SubmissionPendingNotice(),
       ],
     );
   }
@@ -547,6 +647,37 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SubmissionPendingNotice extends StatelessWidget {
+  const _SubmissionPendingNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: AbsorbPointer(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.75),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.45),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Image.asset(
+              'assets/images/judge.png',
+              fit: BoxFit.contain,
+              width: MediaQuery.of(context).size.width * 0.9,
+            ),
           ),
         ),
       ),
