@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:tfh2025/pages/canvas_page.dart';
 import 'package:tfh2025/pages/final_result_page.dart';
-import 'package:tfh2025/pages/game_start_page.dart';
 import 'package:tfh2025/pages/judging_page.dart';
 import 'package:tfh2025/pages/password_page.dart';
 import 'package:tfh2025/pages/ready_waiting_room_page.dart';
@@ -46,12 +45,7 @@ final router = GoRouter(
         roomId: state.pathParameters['roomId']!,
       ),
     ),
-    GoRoute(
-      path: '/game_start/:roomId',
-      builder: (context, state) => GameStartPage(
-        roomId: state.pathParameters['roomId']!,
-      ),
-    ),
+
     GoRoute(
       path: '/canvas',
       builder: (context, state) => CanvasPage(

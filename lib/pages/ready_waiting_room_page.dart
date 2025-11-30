@@ -96,7 +96,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
         _hasNavigatedToGame = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.go('/game_start/${widget.roomId}');
+            context.go('/canvas?roomId=${widget.roomId}');
           }
         });
       }
