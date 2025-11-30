@@ -55,7 +55,7 @@ class _TopPageState extends State<TopPage> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Image.asset(
-                        'assets/image/title.png',
+                        'assets/images/title.png',
                         fit: BoxFit.contain,
                       ),
                     ),
