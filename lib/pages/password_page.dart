@@ -8,6 +8,7 @@ import 'package:tfh2025/components/background.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
+import 'package:tfh2025/utils/icon_selector.dart';
 import 'package:tfh2025/utils/rive_support.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
@@ -95,17 +96,21 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
 
         // 作成したルームに参加
         debugPrint('[PasswordPage] ルーム参加開始');
+        final randomIcon = IconSelector.selectRandomIcon();
         await ref.read(participantRepositoryProvider).joinRoom(
               roomId: roomId,
               displayName: nameText,
+              avatarUrl: randomIcon,
             );
         debugPrint('[PasswordPage] ルーム参加成功');
       } else {
         // 参加モード: 既存のルームに参加
         debugPrint('[PasswordPage] joinRoom呼び出し開始');
+        final randomIcon = IconSelector.selectRandomIcon();
         await ref.read(participantRepositoryProvider).joinRoom(
               password: passwordText,
               displayName: nameText,
+              avatarUrl: randomIcon,
             );
         debugPrint('[PasswordPage] joinRoom成功');
 

@@ -17,6 +17,7 @@ import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
+import 'package:tfh2025/utils/icon_selector.dart';
 import 'package:tfh2025/utils/rive_support.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
@@ -254,18 +255,22 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       //todo 削除
       // タイムアウトまたはエラーの場合は仮データで参加登録（モック用）
       final participantRepository = ref.read(participantRepositoryProvider);
+      final randomIcon = IconSelector.selectRandomIcon();
       final newParticipant = await participantRepository.joinRoom(
         roomId: roomId,
         displayName: 'テストユーザー',
+        avatarUrl: randomIcon,
       );
       return newParticipant.displayName;
     }
 
     // 参加者が見つからない場合は仮データで参加登録（モック用）
     final participantRepository = ref.read(participantRepositoryProvider);
+    final randomIcon = IconSelector.selectRandomIcon();
     final newParticipant = await participantRepository.joinRoom(
       roomId: roomId,
       displayName: 'テストユーザー',
+      avatarUrl: randomIcon,
     );
     return newParticipant.displayName;
   }

@@ -224,7 +224,8 @@ class _FinalResultSliverAppBar extends StatelessWidget {
                 alignment: WrapAlignment.center,
                 children: [
                   _HeaderInfoPill(
-                      label: '残りタイム : ${room.remainingTime ?? 0}秒',),
+                    label: '残りタイム : ${room.remainingTime ?? 0}秒',
+                  ),
                   _HeaderInfoPill(label: 'コンボ数 : ${room.chainCount}回'),
                 ],
               ),
@@ -255,50 +256,56 @@ class _ResultTimelineSlivers extends HookConsumerWidget {
     final animationKey = useState(0);
 
     // 0.8秒ごとに表示するアイテム数を増やす
-    useEffect(() {
-      // アイテムの総数を計算（AIイントロ + 各サブミッションの2要素）
-      final totalItems = 1 + submissions.length * 2;
+    useEffect(
+      () {
+        // アイテムの総数を計算（AIイントロ + 各サブミッションの2要素）
+        final totalItems = 1 + submissions.length * 2;
 
-      if (visibleItemCount.value >= totalItems) {
-        return null;
-      }
-
-      final timer = Future.delayed(const Duration(milliseconds: 800), () {
-        if (visibleItemCount.value < totalItems) {
-          visibleItemCount.value++;
-          animationKey.value++;
-
-          // 自動スクロール（少し遅らせて実行）
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (scrollController.hasClients) {
-                final position = scrollController.position;
-                // 新しい要素が表示されたら下にスクロール
-                final targetPosition = position.pixels + 350;
-                final maxScroll = position.maxScrollExtent;
-
-                scrollController.animateTo(
-                  targetPosition > maxScroll ? maxScroll : targetPosition,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                );
-              }
-            });
-          });
+        if (visibleItemCount.value >= totalItems) {
+          return null;
         }
-      });
 
-      return () => timer.ignore();
-    }, [animationKey.value],);
+        final timer = Future.delayed(const Duration(milliseconds: 800), () {
+          if (visibleItemCount.value < totalItems) {
+            visibleItemCount.value++;
+            animationKey.value++;
+
+            // 自動スクロール（少し遅らせて実行）
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (scrollController.hasClients) {
+                  final position = scrollController.position;
+                  // 新しい要素が表示されたら下にスクロール
+                  final targetPosition = position.pixels + 350;
+                  final maxScroll = position.maxScrollExtent;
+
+                  scrollController.animateTo(
+                    targetPosition > maxScroll ? maxScroll : targetPosition,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOut,
+                  );
+                }
+              });
+            });
+          }
+        });
+
+        return () => timer.ignore();
+      },
+      [animationKey.value],
+    );
 
     // 初期表示をトリガー
-    useEffect(() {
-      Future.delayed(const Duration(milliseconds: 800), () {
-        visibleItemCount.value = 1;
-        animationKey.value = 1;
-      });
-      return null;
-    }, const [],);
+    useEffect(
+      () {
+        Future.delayed(const Duration(milliseconds: 800), () {
+          visibleItemCount.value = 1;
+          animationKey.value = 1;
+        });
+        return null;
+      },
+      const [],
+    );
 
     final visibleElements = <Widget>[];
     var itemIndex = 0;
@@ -450,6 +457,15 @@ class _ParticipantHeader extends StatelessWidget {
   final Participant participant;
   final String imageUrl;
 
+  /// URLかアセットパスかを判定して適切なImageProviderを返す
+  ImageProvider _getImageProvider(String urlOrAsset) {
+    if (urlOrAsset.startsWith('http://') || urlOrAsset.startsWith('https://')) {
+      return NetworkImage(urlOrAsset);
+    } else {
+      return AssetImage(urlOrAsset);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -481,7 +497,7 @@ class _ParticipantHeader extends StatelessWidget {
           radius: 20,
           backgroundColor: colorScheme.secondary,
           backgroundImage: participant.avatarUrl != null
-              ? NetworkImage(participant.avatarUrl!)
+              ? _getImageProvider(participant.avatarUrl!)
               : null,
           child: participant.avatarUrl == null
               ? Text(
