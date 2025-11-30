@@ -396,8 +396,10 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                       dialogFuture.then((_) {
                         if (mounted) {
                           setState(() => _isCanvasInteracting = false);
-                          // ダイアログ終了後にキャンバスが描けなくなる場合の保険としてコントローラを再生成
-                          _resetPainterController();
+                          // 採用された場合のみキャンバスをクリア
+                          if (validation?.isAdopted == true) {
+                            _resetPainterController();
+                          }
                         }
                       });
                     }
