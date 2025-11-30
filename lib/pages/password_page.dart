@@ -5,15 +5,22 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rive/rive.dart';
 import 'package:tfh2025/components/background.dart';
+import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
+import 'package:tfh2025/services/providers/firebase_providers.dart';
 import 'package:tfh2025/utils/rive_support.dart';
 
 class PasswordPage extends ConsumerStatefulWidget {
-  const PasswordPage({required this.isCreateMode, super.key});
+  const PasswordPage({
+    required this.isCreateMode,
+    this.enableRive = true,
+    super.key,
+  });
 
   final bool isCreateMode;
+  final bool enableRive;
 
   @override
   ConsumerState<PasswordPage> createState() => _PasswordPageState();
@@ -29,6 +36,7 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
   @override
   void initState() {
     super.initState();
+    _riveEnabled = _riveEnabled && widget.enableRive;
     _passwordController = TextEditingController();
     _displayNameController = TextEditingController();
     Future.microtask(
@@ -81,6 +89,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
       return;
     }
 
+    ref.read(loadingProvider.notifier).show();
+
     try {
       String roomId;
 
@@ -110,7 +120,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
         debugPrint('[PasswordPage] joinRoom成功');
 
         // 参加したルームのIDを取得するため、Firestoreから取得
-        final roomsSnapshot = await FirebaseFirestore.instance
+        final firestore = ref.read(firebaseFirestoreProvider);
+        final roomsSnapshot = await firestore
             .collection('rooms')
             .where('password', isEqualTo: passwordText)
             .where('status', isEqualTo: 'waiting')
@@ -138,6 +149,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
           SnackBar(content: Text('$errorMessage: $e')),
         );
       }
+    } finally {
+      ref.read(loadingProvider.notifier).hide();
     }
   }
 
@@ -196,9 +209,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () async {
-                await cacheStrategy.fetch(() async {
-                  await _handleSubmit();
-                });
+                if (ref.read(loadingProvider)) return;
+                await cacheStrategy.fetch(_handleSubmit);
               },
               child: Text(buttonText),
             ),

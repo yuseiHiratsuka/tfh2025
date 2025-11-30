@@ -20,10 +20,12 @@ final _roomStreamProvider =
 class ReadyWaitingRoomPage extends ConsumerStatefulWidget {
   const ReadyWaitingRoomPage({
     required this.roomId,
+    this.enableRive = true,
     super.key,
   });
 
   final String roomId;
+  final bool enableRive;
 
   @override
   ConsumerState<ReadyWaitingRoomPage> createState() =>
@@ -39,6 +41,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
   @override
   void initState() {
     super.initState();
+    _riveEnabled = _riveEnabled && widget.enableRive;
     Future.microtask(
       () => ref.read(authRepositoryProvider).signInAnonymouslyIfNeeded(),
     );
@@ -107,7 +110,7 @@ class _ReadyWaitingRoomPageState extends ConsumerState<ReadyWaitingRoomPage> {
         _hasNavigatedToGame = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            context.go('/canvas?roomId=${widget.roomId}');
+            context.go('/game_start/${widget.roomId}');
           }
         });
       }
