@@ -1,10 +1,10 @@
+import 'package:async/async.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rive/rive.dart';
 import 'package:tfh2025/components/background.dart';
-import 'package:tfh2025/providers/loading_provider.dart';
 import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
@@ -81,8 +81,6 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
       return;
     }
 
-    ref.read(loadingProvider.notifier).show();
-
     try {
       String roomId;
 
@@ -140,8 +138,6 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
           SnackBar(content: Text('$errorMessage: $e')),
         );
       }
-    } finally {
-      ref.read(loadingProvider.notifier).hide();
     }
   }
 
@@ -153,6 +149,8 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
         ? '新しいルームを作成します。\n「あいことば」を決めてください。'
         : '入力した「あいことば」のルームに\n参加します。';
     final buttonText = widget.isCreateMode ? 'ルームを作成' : 'ルームに参加';
+
+    final cacheStrategy = AsyncCache<void>.ephemeral();
 
     return Scaffold(
       body: Background(
@@ -197,8 +195,10 @@ class _PasswordPageState extends ConsumerState<PasswordPage> {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
-                ref.read(loadingProvider) ? null : _handleSubmit();
+              onPressed: () async {
+                await cacheStrategy.fetch(() async {
+                  await _handleSubmit();
+                });
               },
               child: Text(buttonText),
             ),

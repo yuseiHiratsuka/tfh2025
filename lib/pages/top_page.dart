@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -49,6 +50,8 @@ class _TopPageState extends State<TopPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cacheStrategy = AsyncCache<void>.ephemeral();
+
     return Scaffold(
       body: Background(
         child: Center(
@@ -81,11 +84,15 @@ class _TopPageState extends State<TopPage> {
               ),
               GestureDetector(
                 onTap: () async {
-                  HapticFeedback.heavyImpact();
-                  await Future<void>.delayed(const Duration(seconds: 2));
-                  if (context.mounted) {
-                    context.push('/room_entry');
-                  }
+                  cacheStrategy.fetch(() async {
+                    HapticFeedback.heavyImpact();
+                    await Future<void>.delayed(
+                      const Duration(milliseconds: 1000),
+                    );
+                    if (context.mounted) {
+                      context.push('/room_entry');
+                    }
+                  });
                 },
                 child: _buildStartButton(),
               ),
