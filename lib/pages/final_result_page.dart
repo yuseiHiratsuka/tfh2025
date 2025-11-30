@@ -362,10 +362,9 @@ class _AIIntroBubble extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
+        const CircleAvatar(
           radius: 20,
-          backgroundColor: colorScheme.primary,
-          child: Icon(Icons.smart_toy, size: 24, color: colorScheme.onPrimary),
+          backgroundImage: AssetImage('assets/images/robot.png'),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -400,7 +399,7 @@ class _AIIntroBubble extends StatelessWidget {
                     Text(
                       'ゴール：「${room.goalCharacter}」',
                       style: textTheme.bodyMedium?.copyWith(
-                        color: Color(0xFF301A6B),
+                        color: const Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -545,10 +544,9 @@ class _AIResponseBubble extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CircleAvatar(
+        const CircleAvatar(
           radius: 20,
-          backgroundColor: colorScheme.primary,
-          child: Icon(Icons.smart_toy, size: 24, color: colorScheme.onPrimary),
+          backgroundImage: AssetImage('assets/images/robot.png'),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -594,7 +592,6 @@ class _FinalResultFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -615,7 +612,7 @@ class _FinalResultFooter extends StatelessWidget {
             ),
           ),
           child: const Text(
-            'ホームへ'
+            'ホームへ',
           ),
         ),
       ),
