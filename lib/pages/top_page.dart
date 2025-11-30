@@ -64,17 +64,30 @@ class _TopPageState extends State<TopPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.only(
+                        bottom: 8.0,
+                        top: 16.0,
+                        left: 16.0,
+                        right: 16.0,
+                      ),
                       child: Image.asset(
                         'assets/images/title.png',
                         fit: BoxFit.contain,
                       ),
                     ),
+                    const Text(
+                      'みゃくらく繋ぐ絵しりとり',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                     const SizedBox(height: 40),
                     const Text(
                       'スタート→ゴールを、\nAI判定つき絵しりとりでつなごう！',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 32,
                         color: Colors.white,
                       ),
                       textAlign: TextAlign.center,
