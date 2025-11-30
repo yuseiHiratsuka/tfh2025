@@ -46,6 +46,7 @@ dev_dependencies:
   riverpod_generator: ^3.0.3
   riverpod_lint: ^3.0.3
   json_serializable: ^6.8.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -58,3 +59,8 @@ flutter:
     - family: NicomojiPlus
       fonts:
         - asset: assets/fonts/nicomoji-plus_v2-5.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
