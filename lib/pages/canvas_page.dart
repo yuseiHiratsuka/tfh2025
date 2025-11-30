@@ -127,6 +127,26 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     });
   }
 
+  double get _dangerLevel {
+    final progress = 1 - (_secondsLeft / _initialSeconds);
+    return math.max(0.0, math.min(1.0, progress));
+  }
+
+  Gradient _buildBackgroundGradient(BuildContext context) {
+    final theme = Theme.of(context);
+    final intensity = _dangerLevel * _dangerLevel; // 強調するため二乗でカーブさせる
+    final topColor =
+        Color.lerp(theme.colorScheme.primary, Colors.red.shade900, intensity)!;
+    final bottomColor = Color.lerp(
+        theme.colorScheme.secondary, Colors.red.shade500, intensity)!;
+
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [topColor, bottomColor],
+    );
+  }
+
   void _setMode(FreeStyleMode mode) {
     _controller.freeStyleSettings =
         _controller.freeStyleSettings.copyWith(mode: mode);
@@ -411,9 +431,11 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
     );
 
     final roomAsync = ref.watch(roomStreamProvider(roomId));
+    final backgroundGradient = _buildBackgroundGradient(context);
 
     return Scaffold(
       body: Background(
+        gradient: backgroundGradient,
         child: SafeArea(
           child: roomAsync.when(
             data: (room) {
@@ -597,6 +619,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
                 );
               },
             ),
+            const SizedBox(height: 26),
             _buildSubmitButton(),
           ],
         ),
@@ -617,13 +640,10 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
               },
         child: SizedBox(
           width: double.infinity,
-          height: 130,
-          child: Transform.scale(
-            scale: 1.6,
-            child: RiveWidget(
-              controller: _buttonController!,
-              fit: Fit.fill,
-            ),
+          height: 50,
+          child: RiveWidget(
+            controller: _buttonController!,
+            fit: Fit.cover,
           ),
         ),
       );

@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
 
 class Background extends StatelessWidget {
-  const Background({required this.child, this.scrollable = false, super.key});
+  const Background({
+    required this.child,
+    this.scrollable = false,
+    this.gradient,
+    super.key,
+  });
 
   final Widget child;
   final bool scrollable;
+  final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final effectiveGradient = gradient ??
+        LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            theme.colorScheme.primary,
+            theme.colorScheme.secondary,
+          ],
+        );
 
     Widget buildChild(BuildContext context) {
       Widget effectiveChild = SafeArea(
@@ -24,14 +39,7 @@ class Background extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.secondary,
-          ],
-        ),
+        gradient: effectiveGradient,
       ),
       child: buildChild(context),
     );
