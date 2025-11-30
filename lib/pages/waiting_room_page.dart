@@ -162,9 +162,8 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
                                         )
                                       : EdgeInsetsGeometry.zero,
                                   child: _PlayerListTile(
-                                    displayName: participant.displayName,
+                                    participant: participant,
                                     isMe: isMe,
-                                    isMaster: participant.isMaster,
                                   ),
                                 );
                               },
@@ -261,18 +260,27 @@ class _WaitingRoomPageState extends ConsumerState<WaitingRoomPage> {
 
 class _PlayerListTile extends StatelessWidget {
   const _PlayerListTile({
-    required this.displayName,
+    required this.participant,
     required this.isMe,
-    required this.isMaster,
   });
 
-  final String displayName;
+  final Participant participant;
   final bool isMe;
-  final bool isMaster;
+
+  /// URLかアセットパスかを判定して適切なImageProviderを返す
+  ImageProvider? _getImageProvider(String? urlOrAsset) {
+    if (urlOrAsset == null) return null;
+    if (urlOrAsset.startsWith('http://') || urlOrAsset.startsWith('https://')) {
+      return NetworkImage(urlOrAsset);
+    } else {
+      return AssetImage(urlOrAsset);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isMaster = participant.isMaster;
 
     return Material(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -282,17 +290,21 @@ class _PlayerListTile extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor:
               isMaster ? Colors.amber : theme.colorScheme.primaryContainer,
-          child: Icon(
-            isMaster ? Icons.star : Icons.person,
-            color:
-                isMaster ? Colors.white : theme.colorScheme.onPrimaryContainer,
-          ),
+          backgroundImage: _getImageProvider(participant.avatarUrl),
+          child: participant.avatarUrl == null
+              ? Icon(
+                  isMaster ? Icons.star : Icons.person,
+                  color: isMaster
+                      ? Colors.white
+                      : theme.colorScheme.onPrimaryContainer,
+                )
+              : null,
         ),
         title: Row(
           children: [
             Expanded(
               child: Text(
-                displayName,
+                participant.displayName,
                 style: theme.textTheme.bodyLarge,
               ),
             ),

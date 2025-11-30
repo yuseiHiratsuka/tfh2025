@@ -54,6 +54,7 @@ flutter:
   assets:
     - assets/rive/
     - assets/images/
+    - assets/icon_set/
 
   fonts:
     - family: NicomojiPlus
