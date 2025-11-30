@@ -391,16 +391,16 @@ class _AIIntroBubble extends StatelessWidget {
                   children: [
                     Text(
                       'スタート：「${room.startCharacter}」',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: const Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     Text(
                       'ゴール：「${room.goalCharacter}」',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: Color(0xFF301A6B),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
