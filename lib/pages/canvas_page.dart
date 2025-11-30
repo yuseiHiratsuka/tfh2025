@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_painter_v2/flutter_painter.dart';
@@ -32,6 +33,8 @@ class CanvasPage extends ConsumerStatefulWidget {
 }
 
 class _CanvasPageState extends ConsumerState<CanvasPage> {
+  final cacheStrategy = AsyncCache<void>.ephemeral();
+
   Timer? _countdownTimer;
   static const _initialSeconds = 120;
   int _secondsLeft = _initialSeconds;
@@ -506,7 +509,13 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   Widget _buildSubmitButton() {
     if (_riveEnabled && _buttonController != null) {
       return GestureDetector(
-        onTap: _isSubmitting ? null : _submitDrawing,
+        onTap: _isSubmitting
+            ? null
+            : () async {
+                await AsyncCache<void>.ephemeral().fetch(() async {
+                  await _submitDrawing();
+                });
+              },
         child: SizedBox(
           width: double.infinity,
           height: 50,
