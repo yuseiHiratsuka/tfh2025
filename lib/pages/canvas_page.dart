@@ -49,6 +49,8 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   final Set<String> _pendingSubmissionIds = {};
   final Map<String, ProviderSubscription<AsyncValue<Submission?>>>
       _submissionWatchSubscriptions = {};
+  Submission? _currentJudgmentSubmission;
+  String? _currentJudgmentRequiredCharacter;
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -377,30 +379,11 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) {
-                      // ダイアログ表示中にキャンバスが操作不能になるのを防ぐため、
-                      // 表示前後でインタラクションフラグをリセットしておく
-                      setState(() => _isCanvasInteracting = false);
-                      final dialogFuture = showGeneralDialog<void>(
-                        context: context,
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            ScaleTransition(
-                          scale: animation,
-                          child: Center(
-                            child: _Dialog(
-                              submission: newSubmission,
-                              requiredCharacter: currentCharacter,
-                            ),
-                          ),
-                        ),
-                      );
-                      dialogFuture.then((_) {
-                        if (mounted) {
-                          setState(() => _isCanvasInteracting = false);
-                          // 採用された場合のみキャンバスをクリア
-                          if (validation?.isAdopted == true) {
-                            _resetPainterController();
-                          }
-                        }
+                      // 判定中のWidgetを表示するため、状態を更新
+                      setState(() {
+                        _isCanvasInteracting = false;
+                        _currentJudgmentSubmission = newSubmission;
+                        _currentJudgmentRequiredCharacter = currentCharacter;
                       });
                     }
                   });
@@ -603,6 +586,31 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
           ],
         ),
         if (_pendingSubmissionIds.isNotEmpty) const _SubmissionPendingNotice(),
+        if (_currentJudgmentSubmission != null)
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              child: Center(
+                child: _JudgmentWidget(
+                  submission: _currentJudgmentSubmission!,
+                  requiredCharacter: _currentJudgmentRequiredCharacter,
+                  onClose: () {
+                    final validation = _currentJudgmentSubmission?.validation;
+                    setState(() {
+                      _currentJudgmentSubmission = null;
+                      _currentJudgmentRequiredCharacter = null;
+                      _isCanvasInteracting = false;
+                    });
+
+                    // 採用された場合のみキャンバスをクリア
+                    if (validation?.isAdopted == true) {
+                      _resetPainterController();
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -854,20 +862,22 @@ class _PainterControls extends StatelessWidget {
   }
 }
 
-class _Dialog extends StatefulWidget {
-  const _Dialog({
+class _JudgmentWidget extends StatefulWidget {
+  const _JudgmentWidget({
     required this.submission,
+    required this.onClose,
     this.requiredCharacter,
   });
 
   final Submission submission;
   final String? requiredCharacter;
+  final VoidCallback onClose;
 
   @override
-  State<_Dialog> createState() => _DialogState();
+  State<_JudgmentWidget> createState() => _JudgmentWidgetState();
 }
 
-class _DialogState extends State<_Dialog> {
+class _JudgmentWidgetState extends State<_JudgmentWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -876,9 +886,9 @@ class _DialogState extends State<_Dialog> {
     final validation = widget.submission.validation;
     final isGoalReached = validation?.isGoalReached ?? false;
 
-    return Dialog(
-      insetPadding: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
       ),
       clipBehavior: Clip.antiAlias,
@@ -1023,7 +1033,7 @@ class _DialogState extends State<_Dialog> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: widget.onClose,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF2E207A),
