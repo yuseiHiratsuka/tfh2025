@@ -16,6 +16,7 @@ import 'package:tfh2025/services/repositories/auth_repository.dart';
 import 'package:tfh2025/services/repositories/participant_repository.dart';
 import 'package:tfh2025/services/repositories/room_repository.dart';
 import 'package:tfh2025/services/repositories/submission_repository.dart';
+import 'package:tfh2025/utils/rive_support.dart';
 
 /// flutter_painter_v2 の最小限のサンプル。
 class CanvasPage extends ConsumerStatefulWidget {
@@ -41,6 +42,7 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
   File? _buttonRiveFile;
   RiveWidgetController? _buttonController;
   String? _lastCurrentCharacter;
+  bool _riveEnabled = isRiveSupported;
   static const _palette = <Color>[
     Colors.black,
     Colors.red,
@@ -62,18 +64,23 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
       background: const ColorBackgroundDrawable(color: Colors.white),
     );
     _startCountdown();
-    _loadButtonRiveFile();
+    if (_riveEnabled) {
+      _loadButtonRiveFile();
+    }
   }
 
   Future<void> _loadButtonRiveFile() async {
-    _buttonRiveFile = await File.asset(
-      'assets/rive/button.riv',
-      riveFactory: Factory.rive,
-    );
-    if (_buttonRiveFile != null) {
-      _buttonController = RiveWidgetController(_buttonRiveFile!);
-      setState(() {});
+    final riveFile = await loadRiveFileIfSupported('assets/rive/button.riv');
+    if (!mounted) return;
+    if (riveFile == null) {
+      setState(() {
+        _riveEnabled = false;
+      });
+      return;
     }
+    _buttonRiveFile = riveFile;
+    _buttonController = RiveWidgetController(_buttonRiveFile!);
+    setState(() {});
   }
 
   @override
@@ -491,24 +498,49 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
           },
         ),
         const SizedBox(height: 26),
-        GestureDetector(
-          onTap: _isSubmitting ? null : _submitDrawing,
-          child: _buttonController == null
-              ? const SizedBox(
-                  width: double.infinity,
-                  height: 460,
-                  child: Center(child: CircularProgressIndicator()),
-                )
-              : SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: RiveWidget(
-                    controller: _buttonController!,
-                    fit: Fit.cover,
-                  ),
-                ),
-        ),
+        _buildSubmitButton(),
       ],
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    if (_riveEnabled && _buttonController != null) {
+      return GestureDetector(
+        onTap: _isSubmitting ? null : _submitDrawing,
+        child: SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: RiveWidget(
+            controller: _buttonController!,
+            fit: Fit.cover,
+          ),
+        ),
+      );
+    }
+
+    if (_riveEnabled) {
+      return const SizedBox(
+        width: double.infinity,
+        height: 80,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _isSubmitting ? null : _submitDrawing,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
+        child: const Text(
+          '送信する',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
