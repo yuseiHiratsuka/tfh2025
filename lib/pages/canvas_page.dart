@@ -607,12 +607,14 @@ class _CanvasPageState extends ConsumerState<CanvasPage> {
 
   Widget _buildSubmitButton() {
     if (_riveEnabled && _buttonController != null) {
-      return Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerUp: (_) async {
-          if (_isSubmitting) return;
-          await _submitDrawing();
-        },
+      return GestureDetector(
+        onTap: _isSubmitting
+            ? null
+            : () async {
+                await AsyncCache<void>.ephemeral().fetch(() async {
+                  await _submitDrawing();
+                });
+              },
         child: SizedBox(
           width: double.infinity,
           height: 130,
