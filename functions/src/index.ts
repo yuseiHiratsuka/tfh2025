@@ -48,7 +48,7 @@ export const processSubmissionImage = functions
             // 2. Call Gemini Vision API
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-            const prompt = "この画像をひらがなの単語で表現してください。単語のみを返してください。余計な説明は不要です。";
+            const prompt = "この画像をひらがなの単語で表現してください。ただし、画像に文字だけが書かれている場合や、文字が主要な要素である場合は「らくがき」と返してください。単語のみを返してください。余計な説明は不要です。";
 
             const result = await model.generateContent([
                 prompt,
