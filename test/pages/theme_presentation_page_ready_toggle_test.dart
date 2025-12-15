@@ -130,12 +130,7 @@ void main() {
       final buttonFinder =
           find.byWidgetPredicate((widget) => widget is ElevatedButton);
       expect(buttonFinder, findsOneWidget);
-      expect(find.text('準備完了: 0 / 2'), findsOneWidget);
-      expect(
-        _buttonColor(tester, buttonFinder),
-        Theme.of(tester.element(buttonFinder)).colorScheme.primary,
-      );
-      expect(find.text('準備完了'), findsOneWidget);
+      expect(find.text('おぼえた！'), findsOneWidget);
 
       await tester.tap(buttonFinder);
       await tester.pump();
@@ -152,9 +147,8 @@ void main() {
 
       expect(participantDoc.data()?['isReady'], isTrue);
       expect(roomDoc.data()?['readyCount'], 1);
-      expect(find.text('準備完了: 1 / 2'), findsOneWidget);
-      expect(find.text('準備解除'), findsOneWidget);
-      expect(_buttonColor(tester, buttonFinder), Colors.grey);
+      expect(find.text('待機中...'), findsOneWidget);
+      expect(router.navigations, contains('/ready_waiting/$roomId'));
     });
 
     testWidgets('参加者ストリーム更新で準備表示とボタン状態が切り替わる', (tester) async {
@@ -192,8 +186,7 @@ void main() {
       final buttonFinder =
           find.byWidgetPredicate((widget) => widget is ElevatedButton);
       expect(buttonFinder, findsOneWidget);
-      expect(find.text('準備完了: 0 / 2'), findsOneWidget);
-      expect(find.text('準備完了'), findsOneWidget);
+      expect(find.text('おぼえた！'), findsOneWidget);
 
       await firestore
           .collection('rooms')
@@ -205,9 +198,7 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('準備完了: 1 / 2'), findsOneWidget);
-      expect(find.text('準備解除'), findsOneWidget);
-      expect(_buttonColor(tester, buttonFinder), Colors.grey);
+      expect(find.text('待機中...'), findsOneWidget);
 
       await firestore
           .collection('rooms')
@@ -219,15 +210,7 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.text('準備完了: 0 / 2'), findsOneWidget);
-      expect(
-        find.text('準備完了'),
-        findsOneWidget,
-      );
-      expect(
-        _buttonColor(tester, buttonFinder),
-        Theme.of(tester.element(buttonFinder)).colorScheme.primary,
-      );
+      expect(find.text('おぼえた！'), findsOneWidget);
     });
   });
 }

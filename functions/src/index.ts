@@ -42,13 +42,27 @@ export const processSubmissionImage = functions
             const file = bucket.file(storagePath);
             const [buffer] = await file.download();
 
+            // 0. (optional) しりとりの次の文字を取得してヒントとして利用
+            let hintCharacter: string | null = null;
+            try {
+                const roomSnapshot = await db.doc(`rooms/${roomId}`).get();
+                const roomData = roomSnapshot.data() as { currentCharacter?: string } | undefined;
+                hintCharacter = roomData?.currentCharacter || null;
+            } catch (error) {
+                console.warn(`Failed to load room ${roomId} for hint`, error);
+            }
+
             // Convert buffer to base64
             const imageBase64 = buffer.toString("base64");
 
             // 2. Call Gemini Vision API
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-            const prompt = "この画像をひらがなの単語で表現してください。ただし、画像に文字だけが書かれている場合や、文字が主要な要素である場合は「らくがき」と返してください。単語のみを返してください。余計な説明は不要です。";
+            const basePrompt = "この画像をひらがなの単語で表現してください。ただし、画像に文字だけが書かれている場合や、文字が主要な要素である場合は「らくがき」と返してください。単語のみを返してください。余計な説明は不要です。";
+            const hintPrompt = hintCharacter
+                ? `\n次のしりとりで求められている先頭の文字は「${hintCharacter}」です。複数の解釈がありそうな場合や迷う場合は、「${hintCharacter}」から始まる、または近い音のひらがなの単語として扱えるものを1つ選んで返してください。`
+                : "";
+            const prompt = `${basePrompt}${hintPrompt}`;
 
             const result = await model.generateContent([
                 prompt,
