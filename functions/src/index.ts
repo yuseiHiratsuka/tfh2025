@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
-import { shouldAISubmit, validateShiritori } from "./shiritori";
+import { getShiritoriHead, getShiritoriTail, shouldAISubmit, validateShiritori } from "./shiritori";
 
 admin.initializeApp();
 
@@ -85,8 +85,8 @@ export const processSubmissionImage = functions
                 throw new Error("Gemini returned empty string");
             }
 
-            const firstChar = word.charAt(0);
-            const lastChar = word.charAt(word.length - 1);
+            const firstChar = getShiritoriHead(word);
+            const lastChar = getShiritoriTail(word);
 
             // 3. Update Firestore
             await db.doc(`rooms/${roomId}/submissions/${submissionId}`).update({

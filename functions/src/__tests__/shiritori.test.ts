@@ -1,4 +1,28 @@
-import { validateShiritori } from "../shiritori";
+import { getShiritoriHead, getShiritoriTail, validateShiritori } from "../shiritori";
+
+describe("getShiritoriHead", () => {
+    it("2文字目が小文字ならセットで返す", () => {
+        expect(getShiritoriHead("キャラメル")).toBe("キャ");
+    });
+
+    it("通常の文字なら1文字だけ返す", () => {
+        expect(getShiritoriHead("ねこ")).toBe("ね");
+    });
+});
+
+describe("getShiritoriTail", () => {
+    it("長音は無視して直前の文字を返す", () => {
+        expect(getShiritoriTail("コーヒー")).toBe("ヒ");
+    });
+
+    it("小文字で終わる場合は直前の文字とセットで返す", () => {
+        expect(getShiritoriTail("スパゲッティー")).toBe("ティ");
+    });
+
+    it("単独の小文字で終わる場合は大文字化して返す", () => {
+        expect(getShiritoriTail("ぁ")).toBe("あ");
+    });
+});
 
 describe("validateShiritori", () => {
     describe("ひらがなとカタカナの区別なし", () => {

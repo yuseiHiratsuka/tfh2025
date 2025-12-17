@@ -92,6 +92,28 @@ describe("processSubmissionImage", () => {
         });
     });
 
+    it("末尾が長音や小文字の単語でもlastCharが直前込みで保存される", async () => {
+        mockDownload.mockResolvedValue([Buffer.from("fake-image")]);
+        mockGenerateContent.mockResolvedValue({
+            response: {
+                text: () => "  スパゲッティー ",
+            },
+        });
+
+        await callFunction("images/long-sound.jpg", "roomB", "submissionB");
+
+        expect(mockUpdate).toHaveBeenCalledTimes(1);
+        expect(mockUpdate).toHaveBeenCalledWith({
+            status: "completed",
+            aiResult: {
+                word: "スパゲッティー",
+                firstChar: "ス",
+                lastChar: "ティ",
+                recognizedAt: "mock-timestamp",
+            },
+        });
+    });
+
     it("Geminiが空文字を返した場合はstatusがfailedになる", async () => {
         mockDownload.mockResolvedValue([Buffer.from("fake-image")]);
         mockGenerateContent.mockResolvedValue({

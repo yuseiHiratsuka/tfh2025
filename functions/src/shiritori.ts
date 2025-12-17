@@ -4,6 +4,26 @@ export type ShiritoriValidationResult = {
     reason: string | null;
 };
 
+const SMALL_KANA = new Set([
+    "ぁ", "ぃ", "ぅ", "ぇ", "ぉ",
+    "ゃ", "ゅ", "ょ", "ゎ",
+    "ァ", "ィ", "ゥ", "ェ", "ォ",
+    "ャ", "ュ", "ョ", "ヮ",
+    "っ", "ッ",
+    "ゕ", "ゖ", "ヵ", "ヶ",
+]);
+
+const SMALL_TO_LARGE: Record<string, string> = {
+    "ぁ": "あ", "ぃ": "い", "ぅ": "う", "ぇ": "え", "ぉ": "お",
+    "ゃ": "や", "ゅ": "ゆ", "ょ": "よ", "ゎ": "わ",
+    "ァ": "ア", "ィ": "イ", "ゥ": "ウ", "ェ": "エ", "ォ": "オ",
+    "ャ": "ヤ", "ュ": "ユ", "ョ": "ヨ", "ヮ": "ワ",
+    "っ": "つ", "ッ": "ツ",
+    "ゕ": "か", "ゖ": "け", "ヵ": "カ", "ヶ": "ケ",
+};
+
+const CHOONPU = "ー";
+
 /**
  * カタカナをひらがなに変換する
  * @param str 変換する文字列
@@ -14,6 +34,50 @@ function katakanaToHiragana(str: string): string {
         const chr = match.charCodeAt(0) - 0x60;
         return String.fromCharCode(chr);
     });
+}
+
+/**
+ * しりとりの先頭に使う文字列を抽出する
+ * 先頭+次の文字が小文字の場合はセットで返す
+ */
+export function getShiritoriHead(word: string): string {
+    const chars = Array.from(word);
+    if (chars.length === 0) return "";
+
+    const [first, second] = chars;
+    if (second && SMALL_KANA.has(second)) {
+        return first + second;
+    }
+
+    return first;
+}
+
+/**
+ * しりとりの末尾に使う文字列を抽出する
+ * - 長音符は無視し、直前の文字を末尾として扱う
+ * - 小文字で終わる場合は直前の文字とセットで返す
+ * - 単独の小文字で終わる場合は大文字化して返す
+ */
+export function getShiritoriTail(word: string): string {
+    const chars = Array.from(word);
+    if (chars.length === 0) return "";
+
+    while (chars.length > 0 && chars[chars.length - 1] === CHOONPU) {
+        chars.pop();
+    }
+
+    if (chars.length === 0) return "";
+
+    const last = chars.pop()!;
+
+    if (SMALL_KANA.has(last)) {
+        if (chars.length > 0) {
+            return chars[chars.length - 1] + last;
+        }
+        return SMALL_TO_LARGE[last] || last;
+    }
+
+    return last;
 }
 
 /**
