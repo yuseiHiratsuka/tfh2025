@@ -136,7 +136,7 @@ void main() {
       expect(router.navigations.length, 1);
     });
 
-    testWidgets('ThemePresentationPageはstatusがplayingになったときに一度だけ遷移する',
+    testWidgets('ThemePresentationPageはstatusがplayingになっても自動遷移しない',
         (tester) async {
       const roomId = 'room-id';
       final firestore = FakeFirebaseFirestore();
@@ -176,7 +176,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(router.navigations, ['/game_start/$roomId']);
+      expect(router.navigations, isEmpty);
 
       await firestore.collection('rooms').doc(roomId).update({
         'status': 'playing',
@@ -184,7 +184,7 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(router.navigations.length, 1);
+      expect(router.navigations, isEmpty);
     });
 
     testWidgets('WaitingRoomPageはマスターと非マスターでボタン表示が切り替わる', (tester) async {
