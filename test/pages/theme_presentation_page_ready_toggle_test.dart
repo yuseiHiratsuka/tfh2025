@@ -87,11 +87,6 @@ Participant _participant({
   );
 }
 
-Color? _buttonColor(WidgetTester tester, Finder buttonFinder) {
-  final button = tester.widget<ElevatedButton>(buttonFinder);
-  return button.style?.backgroundColor?.resolve({});
-}
-
 void main() {
   group('ThemePresentationPage 準備トグル', () {
     testWidgets('準備ボタン押下でsetReadyStatusが呼ばれ、表示が更新される',

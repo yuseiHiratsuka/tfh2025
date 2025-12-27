@@ -30,8 +30,6 @@ class ThemePresentationPage extends ConsumerStatefulWidget {
 }
 
 class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
-  bool _hasNavigatedToGame = false;
-
   @override
   void initState() {
     super.initState();
@@ -68,19 +66,6 @@ class _ThemePresentationPageState extends ConsumerState<ThemePresentationPage> {
     final participantsAsync =
         ref.watch(participantsStreamProvider(widget.roomId));
     final roomAsync = ref.watch(_roomStreamProvider(widget.roomId));
-
-    // ルームステータスがplayingになったらゲーム開始画面へ
-    roomAsync.whenData((room) {
-      final status = room.data()?['status'] as String?;
-      if (status == 'playing' && !_hasNavigatedToGame && mounted) {
-        _hasNavigatedToGame = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            context.go('/game_start/${widget.roomId}');
-          }
-        });
-      }
-    });
 
     return Scaffold(
       body: Background(
